@@ -1,5 +1,5 @@
-import cloneObj from './cloneObj'
-import calcColor from './calcColor'
+import cloneObj from '../helpers/cloneObj'
+import newCalcColor from './calcColor'
 
 import { CustomOptionsObject } from '../app'
 
@@ -7,6 +7,15 @@ import { CustomOptionsObject } from '../app'
 const mathAvg = (values) => {
   let sum = values.reduce((previous, current) => current += previous);
   return sum / values.length
+}
+
+
+const generateShadowObj = (options: { type: ShadowEffect['type'], color: RGBA, offset: Vector, radius: number }) => {
+  return <ShadowEffect> {
+    ...options,
+    blendMode: 'NORMAL',
+    visible: true
+  }
 }
 
 
@@ -23,40 +32,73 @@ export default ( node: Exclude<SceneNode, SliceNode | GroupNode>, options: Custo
     b: Math.round(fill.color.b * 255) 
   }
 
-  const hexColorLightShadow: RGBA = { ...calcColor(rgbColor, options.intensity), a: 1 },
-        hexColorDarkShadow: RGBA = { ...calcColor(rgbColor, options.intensity * -1), a: 1 }
+  console.log('original color', fill.color)
 
   let shadowType: ShadowEffect['type'] = (options.inset ? 'INNER_SHADOW' : 'DROP_SHADOW') || 'DROP_SHADOW',
-      elevation = options.elevation || Math.round(node.width / 35)
-      
-  const offsetLightShadow: Vector = { x: elevation * -1, y: elevation * -1 }
-  const offsetDarkShadow: Vector = { x: elevation, y: elevation }
+      elevation = options.elevation || 5
 
   // Get average from width & height to calculate blur
-  let blur = options.blur || Math.round(mathAvg([ offsetDarkShadow.x, offsetDarkShadow.y ])) * 2
+  let offset: Vector = { x: elevation, y: elevation }
+  let blur = options.blur || Math.round(mathAvg([ offset.x, offset.y ])) * 2
 
-  // Now, assign the two shadows to the node.
-  const lightShadow: ShadowEffect = {
+  // Dark shadow
+  const colorDarkShadow: RGBA = { ...newCalcColor(rgbColor, options.intensity * -1), a: .9 }
+  const darkShadow = generateShadowObj({
     type: shadowType,
-    color: hexColorLightShadow,
-    blendMode: 'NORMAL',
-    offset: offsetLightShadow,
-    radius: blur,
-    visible: true
-  }
+    color: colorDarkShadow,
+    offset: offset,
+    radius: Math.round(blur * 1.25),
+  })
 
-  const darkShadow: ShadowEffect = {
+  // Dark shadow (overlay on left)
+  const darkShadowLeft = generateShadowObj({
+    type: 'DROP_SHADOW',
+    color: <RGBA>{ ...colorDarkShadow, a: .2 },
+    offset: <Vector>{ x: offset.x * -1, y: offset.y },
+    radius: blur
+  })
+
+  // Dark shadow (overlay on top)
+  const darkShadowTop = generateShadowObj({
+    type: 'DROP_SHADOW',
+    color: <RGBA>{ ...colorDarkShadow, a: .2 },
+    offset: <Vector>{ x: offset.x, y: offset.y * -1 },
+    radius: blur
+  })
+
+  // Dark shadow border-fake
+  const darkBorderShadow = generateShadowObj({
+    type: 'INNER_SHADOW',
+    color: <RGBA>{ ...colorDarkShadow, a: .5 },
+    offset: <Vector>{ x: -1, y: -1 },
+    radius: 2
+  })
+
+  // Light shadow
+  const colorLightShadow: RGBA = { ...newCalcColor(rgbColor, options.intensity), a: .9 }
+  const lightShadow = generateShadowObj({
     type: shadowType,
-    color: hexColorDarkShadow,
-    blendMode: 'NORMAL',
-    offset: offsetDarkShadow,
-    radius: blur,
-    visible: true
-  }
+    color: colorLightShadow,
+    offset: <Vector>{ x: offset.x * -1, y: offset.y * -1 },
+    radius: blur
+  })
+
+  // Light shadow border-fake
+  const lightBorderShadow = generateShadowObj({
+    type: 'INNER_SHADOW',
+    color: <RGBA>{ ...colorLightShadow, a: .3 },
+    offset: <Vector>{ x: 1, y: 1 },
+    radius: 2
+  })
+    
 
   node.effects = [
+    darkShadow,
     lightShadow,
-    darkShadow
+    darkShadowTop,
+    darkShadowLeft,
+    darkBorderShadow,
+    lightBorderShadow
   ]
   
   const res: CustomOptionsObject = {

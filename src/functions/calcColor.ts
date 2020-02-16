@@ -1,3 +1,6 @@
+import { rgbToHex, hexToRgb, hslToRgb, rgbToHsl } from '../helpers/colorFormatChanger'
+
+
 /**
  * Calculates a new hex string based on a given one and a luminance
  * @param hex The hex string, without hash ("efefef")
@@ -18,31 +21,19 @@ export default (color: { r: number, g: number, b: number }, luminance: number) =
 }
 
 
-/**
- * Helper to convert a rgb object to hex
- * @param color RGB Object.
- * @returns {String} Hex string (e.g. "efefef")
- */
-const rgbToHex = (color: { r: number, g: number, b: number }) => {
-  const val = [color.r, color.g, color.b].map(x => {
-    const hex = x.toString(16)
-    return hex.length === 1 ? '0' + hex : hex
-  })
+export const newCalcColor = (color: { r: number, g: number, b: number }, luminance: number) => {
+  let hsl = rgbToHsl(color)
 
-  return val.join('')
-}
+  // Change hue a bit
+  hsl.h += .036
 
+  hsl.s += .7
 
-/**
- * Helper to convert a hex string into a rgb object
- * @param {String} hex Hex string (e.g. "efefef")
- * @returns RGB Object.
- */
-const hexToRgb = (hex: string) => {
-  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result ? {
-    r: parseInt(result[1], 16) / 255,
-    g: parseInt(result[2], 16) / 255,
-    b: parseInt(result[3], 16) / 255
-  } : null;
+  // Change luminance to fit the current needs (lighter or darker)
+  hsl.l = Math.min(hsl.l + luminance, 1)
+
+  const rgb = hslToRgb(hsl)
+  // console.log('rgb color', { r: rgb.r, g: rgb.g, b: rgb.b })
+  // console.log('..')
+  return rgb
 }

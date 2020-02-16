@@ -41,21 +41,12 @@
 
     data() {
       return {
-        'intensity': 12,
+        'intensity': 10,
         'blur': 50,
         'blurMax': 100,
         'elevation': 20,
         'elevationMax': 100,
         'inset': false,
-
-        'defaultValues': {
-          'intensity': 15,
-          'blur': 50,
-          'blurMax': 100,
-          'elevation': 20,
-          'elevationMax': 100,
-          'inset': false
-        },
 
         'doneInit': false
       }
@@ -116,7 +107,7 @@
             this.blurMax = options.blur * 2
 
             this.elevation = options.elevation
-            this.elevationMax = options.elevation * 2
+            this.elevationMax = options.elevation * 5
 
             if (msg.type === 'pluginStartDone')
               this.$nextTick(() => {
