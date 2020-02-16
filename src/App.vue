@@ -1,38 +1,136 @@
 <template>
   <div>
-    <img src="./logo.svg" alt="Logo" />
+    <!-- <img src="./logo.svg" alt="Logo" />
     <h2>Rectangle Creators</h2>
     <p>
       Count:
       <input type="number" v-model.number="count" value="2" />
-    </p>
-    <button @click="create">Create</button>
-    <button @click="cancel">Cancel</button>
+    </p> -->
+    <!-- <button>Reset values</button> -->
+
+    Elevation:<br>
+    <div class="center">
+      <input type="range" min="1" :max="elevationMax" v-model.number="elevation"><input type="number" min="1" :max="elevationMax" v-model.number="elevation">
+    </div>
+    <br><br>
+
+    Intensity:<br>
+    <input type="range" min="1" max="50" v-model.number="intensity">
+    <br><br>
+
+    Blur:<br>
+    <input type="range" min="1" :max="blurMax" v-model.number="blur">
+    <br><br>
+
+    <hr>
+
+    Inset:<br>
+    <input type="checkbox" v-model="inset">
   </div>
 </template>
 
 <script>
+  const postMsg = (type, value) => {
+    parent.postMessage({ pluginMessage: { 
+      type, value
+    }}, '*')
+  }
+
   export default {
     name: "App",
+
     data() {
       return {
-        count: 2
+        'intensity': 12,
+        'blur': 50,
+        'blurMax': 100,
+        'elevation': 20,
+        'elevationMax': 100,
+        'inset': false,
+
+        'defaultValues': {
+          'intensity': 15,
+          'blur': 50,
+          'blurMax': 100,
+          'elevation': 20,
+          'elevationMax': 100,
+          'inset': false
+        },
+
+        'doneInit': false
       }
     },
-    methods: {
-      create: function() {
-        const count = parseInt(this.count, 10);
-        console.log(count);
-        parent.postMessage(
-          { pluginMessage: { type: "create-rectangles", count } },
-          "*"
-        );
+
+    watch: {
+      'intensity': function() {
+        if (this.doneInit)
+          postMsg('syncOptions', { options: this.options })
       },
-      cancel: function() {
-        parent.postMessage({ pluginMessage: { type: "cancel" } }, "*");
+
+      'blur': function() {
+        if (this.doneInit)
+          postMsg('syncOptions', { options: this.options })
+      },
+
+      'elevation': function() {
+        if (this.doneInit) {
+          this.blur = this.elevation * 2
+          postMsg('syncOptions', { options: this.options })
+        }
+      },
+
+      'inset': function() {
+        if (this.doneInit)
+          postMsg('syncOptions', { options: this.options })
       }
     },
-    created() {}
+
+    computed: {
+      'options': function() {
+        return {
+          intensity: this.intensity / 100,
+          blur: this.blur,
+          elevation: this.elevation,
+          inset: this.inset
+        }
+      }
+    },
+
+    created() {
+      postMsg('pluginStart', { 
+        options: {
+          ...this.options,
+          blur: null,
+          elevation: null
+        }
+      })
+
+      onmessage = event => {
+        const msg = event.data.pluginMessage
+
+        switch (msg.type) {
+          case 'syncOptions': case 'pluginStartDone': {
+            const options = msg.options
+
+            this.blur = options.blur
+            this.blurMax = options.blur * 2
+
+            this.elevation = options.elevation
+            this.elevationMax = options.elevation * 2
+
+            if (msg.type === 'pluginStartDone')
+              this.$nextTick(() => {
+                this.doneInit = true
+              })
+
+            break
+          }
+          
+          default:
+            break
+        }
+      }
+    }
   };
 </script>
 
@@ -81,5 +179,12 @@ button:focus {
 }
 input:focus {
   box-shadow: inset 0 0 0 2px #18a0fb;
+}
+
+
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>

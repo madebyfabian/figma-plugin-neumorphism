@@ -1,34 +1,43 @@
-if (figma.currentPage.selection.length !== 1) 
-  throw new Error("Please only select one Node")
-
-figma.showUI(__html__, {
-  width: 300,
-  height: 400
-})
-
-const currSel = figma.currentPage.selection[0]
+import generateShadow from './functions/generateShadow'
 
 
-figma.ui.onmessage = msg => {
-  switch (msg.type) {
-    case 'create-rectangles': {
-      const nodes: SceneNode[] = []
-      for (let i = 0; i < msg.count; i++) {
-        const rect = figma.createRectangle()
-        rect.x = i * 150
-        rect.fills = [{type: 'SOLID', color: {r: 1, g: 0.5, b: 0}}]
-        figma.currentPage.appendChild(rect)
-        nodes.push(rect)
+try {
+  if (figma.currentPage.selection.length !== 1) 
+    throw new Error('Please only select one Node!')
+
+  const currNode = figma.currentPage.selection[0]
+
+  if (currNode.type === 'SLICE' || currNode.type === 'GROUP')
+    throw new Error('Groups and slices cannot be used, sorry!')
+
+  figma.showUI(__html__, {
+    width: 300,
+    height: 400
+  })
+
+  figma.ui.onmessage = msg => {
+    switch (msg.type) {
+      case 'syncOptions': {
+        generateShadow(currNode, msg.value.options)
+        break
       }
-      figma.currentPage.selection = nodes
-      figma.viewport.scrollAndZoomIntoView(nodes)
 
-      break
+      case 'pluginStart': {
+        const generatedOptions = generateShadow(currNode, msg.value.options)
+
+        figma.ui.postMessage({
+          type: 'pluginStartDone',
+          options: generatedOptions
+        })
+
+        break
+      }
     }
-
-    default:
-      break
   }
-
-  figma.closePlugin()
+} catch (error) {
+  figma.closePlugin(`😏 ${error.message}`)
 }
+
+
+
+
