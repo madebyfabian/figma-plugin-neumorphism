@@ -1,10 +1,11 @@
 import cloneObj from '../helpers/cloneObj'
 import newCalcColor from './calcColor'
+import mathAvg from '../helpers/mathAvg'
 
 import { CustomOptionsObject } from '../app'
 
 
-export default ( node: Exclude<SceneNode, SliceNode | GroupNode>, options: CustomOptionsObject, onlyCollectSettings = false ) => {
+export default ( node: Exclude<SceneNode, SliceNode | GroupNode>, options: CustomOptionsObject ) => {
   let nodeFill: Paint = cloneObj(node.fills).pop()
 
   if (nodeFill.type !== 'SOLID')
@@ -108,12 +109,6 @@ export default ( node: Exclude<SceneNode, SliceNode | GroupNode>, options: Custo
   return res
 }
 
-
-
-const mathAvg = (values) => {
-  let sum = values.reduce((previous, current) => current += previous);
-  return sum / values.length
-}
 
 
 const generateShadowObj = (options: { type: ShadowEffect['type'], color: RGBA, offset: Vector, radius: number }) => {

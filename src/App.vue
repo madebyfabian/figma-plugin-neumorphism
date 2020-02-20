@@ -15,11 +15,15 @@
     <br><br>
 
     Intensity:<br>
-    <input type="range" min="1" max="50" v-model.number="intensity">
+    <div class="center">
+      <input type="range" min="1" max="50" v-model.number="intensity"><input type="number" min="1" max="50" v-model.number="intensity">
+    </div>
     <br><br>
 
     Blur:<br>
-    <input type="range" min="1" :max="blurMax" v-model.number="blur">
+    <div class="center">
+      <input type="range" min="1" :max="blurMax" v-model.number="blur"><input type="number" min="1" :max="blurMax" v-model.number="blur">
+    </div>
     <br><br>
 
     <hr>
@@ -177,5 +181,10 @@ input:focus {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+input[type="number"] {
+  width: 50px;
+  border: 1px solid #f7f7f8;
 }
 </style>

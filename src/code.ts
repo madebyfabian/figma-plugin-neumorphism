@@ -1,4 +1,5 @@
 import generateShadow from './functions/generateShadow'
+import generateOptions from './functions/generateOptions'
 
 
 try {
@@ -29,6 +30,11 @@ try {
       }
 
       case 'pluginStart': {
+        // Plugin starts. Now, get the options object
+        // const generatedOptionsObj = generateOptions(currNode)
+        // console.log(generatedOptionsObj)
+
+        // console.log('pluginStart() executed inside code.ts =>', msg.value.options)
         const generatedOptions = generateShadow(currNode, msg.value.options)
 
         figma.ui.postMessage({
