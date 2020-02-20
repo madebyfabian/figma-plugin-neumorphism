@@ -15,6 +15,12 @@ try {
     height: 400
   })
 
+  figma.on('selectionchange', () => {
+    // Generate options
+
+    // figma.ui.postMessage ("selection changed", new options)
+  })
+
   figma.ui.onmessage = msg => {
     switch (msg.type) {
       case 'syncOptions': {
