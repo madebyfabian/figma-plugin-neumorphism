@@ -30,7 +30,6 @@ const parentNodeNeedsColorPaint = (node, currSelColor: RGB) => {
  * If parent node shall be painted in the same color as the curr sel.
  */
 export default ( node: Exclude<SceneNode, SliceNode | GroupNode> ) => {
-  console.log('ok')
   let nodeFill: Paint = cloneObj(node.fills).pop()
 
   if (nodeFill.type !== 'SOLID')
@@ -41,7 +40,6 @@ export default ( node: Exclude<SceneNode, SliceNode | GroupNode> ) => {
     g: Math.round(nodeFill.color.g * 255), 
     b: Math.round(nodeFill.color.b * 255) 
   }
-  console.log('ok2')
 
   if (
     node.parent.type !== 'SLICE' &&

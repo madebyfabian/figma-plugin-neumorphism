@@ -3,5 +3,8 @@ export type CustomOptionsObject = {
   blur: number,
   elevation: number,
   inset: boolean,
-  blurManuallySet: boolean
+  blurManuallySet: boolean,
+  shadowDirection: CustomShadowDirection
 }
+
+export type CustomShadowDirection = 'TOP_LEFT' | 'TOP_RIGHT' | 'BOTTOM_RIGHT' | 'BOTTOM_LEFT'

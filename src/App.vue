@@ -2,7 +2,7 @@
   <div>
     Elevation:<br>
     <div class="center">
-      <input type="range" min="1" max="100" v-model.number="elevation"><input type="number" min="1"  max="100" v-model.number="elevation">
+      <input type="range" min="1" max="100" v-model.number="values.elevation"><input type="number" min="1"  max="100" v-model.number="values.elevation">
     </div>
     <br><br>
 
@@ -14,14 +14,30 @@
 
     Intensity:<br>
     <div class="center">
-      <input type="range" min="1" max="50" v-model.number="intensity"><input type="number" min="1" max="50" v-model.number="intensity">
+      <input type="range" min="1" max="50" v-model.number="values.intensity"><input type="number" min="1" max="50" v-model.number="values.intensity">
     </div>
+    <br><br>
+
+    <fieldset>
+      Shadow direction:<br>
+      <input type="radio" id="TOP_LEFT" value="TOP_LEFT" v-model="values.shadowDirection">
+      <label for="TOP_LEFT">Top left</label>
+      <br>
+      <input type="radio" id="TOP_RIGHT" value="TOP_RIGHT" v-model="values.shadowDirection">
+      <label for="TOP_RIGHT">Top right</label>
+      <br>
+      <input type="radio" id="BOTTOM_LEFT" value="BOTTOM_LEFT" v-model="values.shadowDirection">
+      <label for="BOTTOM_LEFT">Bottom left</label>
+      <br>
+      <input type="radio" id="BOTTOM_RIGHT" value="BOTTOM_RIGHT" v-model="values.shadowDirection">
+      <label for="BOTTOM_RIGHT">Bottom right</label>
+    </fieldset>
     <br><br>
 
     <hr>
 
     Inset:<br>
-    <input type="checkbox" v-model="inset">
+    <input type="checkbox" v-model="values.inset">
     <hr>
     <br>
     <button @click="reset">Reset everything</button>
@@ -35,39 +51,49 @@
     }}, '*')
   }
 
+  const generateValues = () => {
+    return {
+      intensity: 10,
+      elevation: 5,
+      inset: false,
+      manualBlur: null,
+      inset: false,
+      shadowDirection: 'TOP_LEFT',
+    }
+  }
+
   export default {
     name: "App",
 
     data() {
       return {
-        'intensity': 10,
-        'elevation': 5,
-        'inset': false,
-        'manualBlur': null,
-
-        'doneInit': false,
-        'initialOptions': { intensity: 10, elevation: 5, inset: false, manualBlur: null, inset: false }
+        'values': generateValues(),
+        'doneInit': false
       }
     },
 
     watch: {
-      'intensity': function() {
+      'values.intensity': function() {
         if (this.doneInit)
           postMsg('syncOptions', { options: this.options })
       },
 
       'blur': function() {
-        if (this.doneInit && this.manualBlur)
+        if (this.doneInit && this.values.manualBlur)
           postMsg('syncOptions', { options: this.options })
       },
 
-      'elevation': function() {
-        if (this.doneInit) {
+      'values.elevation': function() {
+        if (this.doneInit) 
           postMsg('syncOptions', { options: this.options })
-        }
       },
 
-      'inset': function() {
+      'values.inset': function() {
+        if (this.doneInit)
+          postMsg('syncOptions', { options: this.options })
+      },
+
+      'values.shadowDirection': function() {
         if (this.doneInit)
           postMsg('syncOptions', { options: this.options })
       }
@@ -76,31 +102,29 @@
     computed: {
       'blur': {
         get() {
-          return this.manualBlur || (this.elevation * 2)
+          console.log('get() blur')
+          return this.values.manualBlur || (this.values.elevation * 2)
         },
         set (newValue) {
-          this.manualBlur = parseInt(newValue)
+          this.values.manualBlur = parseInt(newValue)
         }
       },
 
       'options': function() {
         return {
-          intensity: this.intensity,
+          intensity: this.values.intensity,
           blur: this.blur,
-          elevation: this.elevation,
-          inset: this.inset,
-          blurManuallySet: !!this.manualBlur
+          elevation: this.values.elevation,
+          inset: this.values.inset,
+          blurManuallySet: !!this.values.manualBlur,
+          shadowDirection: this.values.shadowDirection
         }
       }
     },
 
     methods: {
       reset() {
-        this.intensity = this.initialOptions.intensity
-        this.elevation = this.initialOptions.elevation
-        this.blur = this.initialOptions.blur
-        this.manualBlur = this.initialOptions.manualBlur
-        this.inset = this.initialOptions.inset
+        this.values = generateValues()
       }
     },
 
@@ -118,11 +142,12 @@
 
           case 'overrideOptions': {
             console.log('Options have been changed by main.ts. Override them in the UI.')
-            this.intensity = msg.options.intensity
+            this.values.intensity = msg.options.intensity
             this.blur = msg.options.blur
-            this.manualBlur = msg.options.blurManuallySet ? msg.options.blur : null
-            this.elevation = msg.options.elevation
-            this.inset = msg.options.inset
+            this.values.manualBlur = msg.options.blurManuallySet ? msg.options.blur : null
+            this.values.elevation = msg.options.elevation
+            this.values.inset = msg.options.inset
+            this.values.shadowDirection = msg.options.shadowDirection
           }
 
           // case 'syncOptions': {

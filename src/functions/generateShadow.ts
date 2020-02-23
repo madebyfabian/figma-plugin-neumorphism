@@ -99,9 +99,10 @@ export default ( node: Exclude<SceneNode, SliceNode | GroupNode>, options: Custo
     blur: blur,
     elevation: elevation,
     inset: !!(shadowType === 'DROP_SHADOW'),
-    blurManuallySet: options.blurManuallySet
+    blurManuallySet: options.blurManuallySet,
+    shadowDirection: options.shadowDirection
   }
   
-  // console.log('=> executed generateShadow.ts with res:', res)
+  console.log('=> executed generateShadow.ts with res:', res)
   return res
 }
