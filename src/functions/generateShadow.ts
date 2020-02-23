@@ -5,13 +5,26 @@ import mathAvg from '../helpers/mathAvg'
 import { CustomOptionsObject } from '../app'
 
 
+const generateShadowObj = (options: { type: ShadowEffect['type'], color: RGBA, offset: Vector, radius: number }) => {
+  return <ShadowEffect> {
+    ...options,
+    blendMode: 'NORMAL',
+    visible: true
+  }
+}
+
+
 export default ( node: Exclude<SceneNode, SliceNode | GroupNode>, options: CustomOptionsObject ) => {
   let nodeFill: Paint = cloneObj(node.fills).pop()
 
   if (nodeFill.type !== 'SOLID')
     throw new Error('Please change the current fill to a solid one.')
 
-  const nodeRGBColor = generateReadableRGB(nodeFill.color)
+  const nodeRGBColor = { 
+    r: Math.round(nodeFill.color.r * 255), 
+    g: Math.round(nodeFill.color.g * 255), 
+    b: Math.round(nodeFill.color.b * 255) 
+  }
 
   let shadowType: ShadowEffect['type'] = (options.inset ? 'INNER_SHADOW' : 'DROP_SHADOW') || 'DROP_SHADOW',
       elevation = options.elevation || 5
@@ -80,69 +93,15 @@ export default ( node: Exclude<SceneNode, SliceNode | GroupNode>, options: Custo
     lightBorderShadow
   ]
 
-  
-  // If parent node shall be painted in the same color as the curr sel.
-  const needs = parentNodeNeedsColorPaint(node, nodeRGBColor)
-  console.log(needs)
-  if (
-    node.parent.type !== 'SLICE' &&
-    node.parent.type !== 'GROUP' &&
-    node.parent.type !== 'DOCUMENT' &&
-    node.parent.type !== 'PAGE' && 
-    needs
-  ) {
-    const newParentFill: SolidPaint = { type: "SOLID", color: nodeFill.color }
-
-    const parentFills = cloneObj(node.parent.fills)
-    parentFills.push(newParentFill)
-    node.parent.fills = parentFills
-  }
 
   const res: CustomOptionsObject = {
-    intensity: options.intensity, // unchanged
+    intensity: options.intensity,
     blur: blur,
     elevation: elevation,
-    inset: !!(shadowType === 'DROP_SHADOW')
+    inset: !!(shadowType === 'DROP_SHADOW'),
+    blurManuallySet: options.blurManuallySet
   }
   
-  console.log('=> generateShadow.ts with:', res)
+  // console.log('=> executed generateShadow.ts with res:', res)
   return res
-}
-
-
-
-const generateShadowObj = (options: { type: ShadowEffect['type'], color: RGBA, offset: Vector, radius: number }) => {
-  return <ShadowEffect> {
-    ...options,
-    blendMode: 'NORMAL',
-    visible: true
-  }
-}
-
-
-const generateReadableRGB = (color: RGB) => {
-  return { 
-    r: Math.round(color.r * 255), 
-    g: Math.round(color.g * 255), 
-    b: Math.round(color.b * 255) 
-  }
-}
-
-
-// Checks if the parent of the curr selected node needs to be painted with the same color as the curr sel.
-const parentNodeNeedsColorPaint = (node, currSelColor: RGB) => {
-  let parentFills = cloneObj(node.parent.fills)
-
-  // Get last item in array (the "highest" color in hierarchy)
-  let parentFill: Paint = parentFills[parentFills.length - 1]
-  if (parentFill.type !== 'SOLID')
-    return true
-  else {
-    // Parent fill is solid. So check if the parent fill equals the curr sel fill.
-    let parentFillStr = Object.entries(generateReadableRGB(parentFill.color)).toString(),
-    currNodeFillStr = Object.entries(currSelColor).toString()
-
-    // If the colors are not matching, return true 
-    return (parentFillStr !== currNodeFillStr)
-  }
 }

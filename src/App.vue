@@ -1,16 +1,14 @@
 <template>
   <div>
-    <!-- <img src="./logo.svg" alt="Logo" />
-    <h2>Rectangle Creators</h2>
-    <p>
-      Count:
-      <input type="number" v-model.number="count" value="2" />
-    </p> -->
-    <!-- <button>Reset values</button> -->
-
     Elevation:<br>
     <div class="center">
-      <input type="range" min="1" :max="elevationMax" v-model.number="elevation"><input type="number" min="1" :max="elevationMax" v-model.number="elevation">
+      <input type="range" min="1" max="100" v-model.number="elevation"><input type="number" min="1"  max="100" v-model.number="elevation">
+    </div>
+    <br><br>
+
+    Blur:<br>
+    <div class="center">
+      <input type="range" min="1" max="200" v-model.number="blur"><input type="number" min="1" max="200" v-model.number="blur">
     </div>
     <br><br>
 
@@ -20,16 +18,13 @@
     </div>
     <br><br>
 
-    Blur:<br>
-    <div class="center">
-      <input type="range" min="1" :max="blurMax" v-model.number="blur"><input type="number" min="1" :max="blurMax" v-model.number="blur">
-    </div>
-    <br><br>
-
     <hr>
 
     Inset:<br>
     <input type="checkbox" v-model="inset">
+    <hr>
+    <br>
+    <button @click="reset">Reset everything</button>
   </div>
 </template>
 
@@ -46,13 +41,12 @@
     data() {
       return {
         'intensity': 10,
-        'blur': 50,
-        'blurMax': 100,
-        'elevation': 20,
-        'elevationMax': 100,
+        'elevation': 5,
         'inset': false,
+        'manualBlur': null,
 
-        'doneInit': false
+        'doneInit': false,
+        'initialOptions': { intensity: 10, elevation: 5, inset: false, manualBlur: null, inset: false }
       }
     },
 
@@ -63,13 +57,12 @@
       },
 
       'blur': function() {
-        if (this.doneInit)
+        if (this.doneInit && this.manualBlur)
           postMsg('syncOptions', { options: this.options })
       },
 
       'elevation': function() {
         if (this.doneInit) {
-          this.blur = this.elevation * 2
           postMsg('syncOptions', { options: this.options })
         }
       },
@@ -81,45 +74,73 @@
     },
 
     computed: {
+      'blur': {
+        get() {
+          return this.manualBlur || (this.elevation * 2)
+        },
+        set (newValue) {
+          this.manualBlur = parseInt(newValue)
+        }
+      },
+
       'options': function() {
         return {
-          intensity: this.intensity / 100,
+          intensity: this.intensity,
           blur: this.blur,
           elevation: this.elevation,
-          inset: this.inset
+          inset: this.inset,
+          blurManuallySet: !!this.manualBlur
         }
       }
     },
 
+    methods: {
+      reset() {
+        this.intensity = this.initialOptions.intensity
+        this.elevation = this.initialOptions.elevation
+        this.blur = this.initialOptions.blur
+        this.manualBlur = this.initialOptions.manualBlur
+        this.inset = this.initialOptions.inset
+      }
+    },
+
     created() {
-      postMsg('pluginStart', { 
-        options: {
-          ...this.options,
-          blur: null,
-          elevation: null
-        }
-      })
+      postMsg('pluginStart', { options: this.options })
 
       onmessage = event => {
         const msg = event.data.pluginMessage
 
         switch (msg.type) {
-          case 'syncOptions': case 'pluginStartDone': {
-            const options = msg.options
-
-            this.blur = options.blur
-            this.blurMax = options.blur * 2
-
-            this.elevation = options.elevation
-            this.elevationMax = options.elevation * 5
-
-            if (msg.type === 'pluginStartDone')
-              this.$nextTick(() => {
-                this.doneInit = true
-              })
-
+          case 'pluginStartDone': {
+            this.$nextTick(() => this.doneInit = true)
             break
           }
+
+          case 'overrideOptions': {
+            console.log('Options have been changed by main.ts. Override them in the UI.')
+            this.intensity = msg.options.intensity
+            this.blur = msg.options.blur
+            this.manualBlur = msg.options.blurManuallySet ? msg.options.blur : null
+            this.elevation = msg.options.elevation
+            this.inset = msg.options.inset
+          }
+
+          // case 'syncOptions': {
+          //   // const options = msg.options
+
+          //   // this.blur = options.blur
+          //   // this.blurMax = options.blur * 2
+
+          //   // this.elevation = options.elevation
+          //   // this.elevationMax = options.elevation * 5
+
+          //   // if (msg.type === 'pluginStartDone')
+          //   //   this.$nextTick(() => {
+          //   //     this.doneInit = true
+          //   //   })
+
+          //   break
+          // }
           
           default:
             break

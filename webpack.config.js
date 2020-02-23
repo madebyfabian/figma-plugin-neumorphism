@@ -9,7 +9,7 @@ module.exports = (env, argv) => ({
 
 	entry: {
 		ui: './src/ui.js',
-		main: './src/code.ts',
+		main: './src/main.ts',
 	},
 
 	resolveLoader: {

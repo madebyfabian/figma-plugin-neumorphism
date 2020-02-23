@@ -6,10 +6,12 @@ import { rgbToHex, hexToRgb, hslToRgb, rgbToHsl } from '../helpers/colorFormatCh
  * @param hex The hex string, without hash ("efefef")
  * @param luminance The luminance, eg. "0.15"
  */
-export default (color: { r: number, g: number, b: number }, luminance: number) => {
+export default ( color: { r: number, g: number, b: number }, luminance: number ) => {
   const hex = rgbToHex(color)
   let newHexColor = '#'
   let colorpair
+
+  luminance /= 100
   
   for (let i = 0; i < 3; i++) {
     colorpair = parseInt(hex.substr(i * 2, 2), 16)
