@@ -46,6 +46,7 @@
 
 <script>
   const postMsg = (type, value) => {
+    // console.log('=> App.vue is executing parent.postMessage() => to main.ts:\n', `    ${type}`, value)
     parent.postMessage({ pluginMessage: { 
       type, value
     }}, '*')
@@ -102,8 +103,7 @@
     computed: {
       'blur': {
         get() {
-          console.log('get() blur')
-          return this.values.manualBlur || (this.values.elevation * 2)
+          return this.values.manualBlur || Math.round((this.values.elevation * 1.1) * 2) // Blur should be a bit more than twice as the elevation
         },
         set (newValue) {
           this.values.manualBlur = parseInt(newValue)
@@ -113,11 +113,11 @@
       'options': function() {
         return {
           intensity: this.values.intensity,
-          blur: this.blur,
           elevation: this.values.elevation,
           inset: this.values.inset,
-          blurManuallySet: !!this.values.manualBlur,
-          shadowDirection: this.values.shadowDirection
+          shadowDirection: this.values.shadowDirection,
+          blur: this.blur,
+          blurManuallySet: !!this.values.manualBlur
         }
       }
     },
@@ -129,6 +129,7 @@
     },
 
     created() {
+      // console.log('pluginStart with', this.options)
       postMsg('pluginStart', { options: this.options })
 
       onmessage = event => {
@@ -137,38 +138,23 @@
         switch (msg.type) {
           case 'pluginStartDone': {
             this.$nextTick(() => this.doneInit = true)
+
             break
           }
 
           case 'overrideOptions': {
-            console.log('Options have been changed by main.ts. Override them in the UI.')
-            this.values.intensity = msg.options.intensity
-            this.blur = msg.options.blur
-            this.values.manualBlur = msg.options.blurManuallySet ? msg.options.blur : null
-            this.values.elevation = msg.options.elevation
-            this.values.inset = msg.options.inset
-            this.values.shadowDirection = msg.options.shadowDirection
-          }
+            // console.log('Options have been changed by main.ts. Override them in the UI.')
 
-          // case 'syncOptions': {
-          //   // const options = msg.options
+            // Removing blur and blurManuallySet from the options object
+            const { blur, blurManuallySet, ...otherOptions } = msg.options
 
-          //   // this.blur = options.blur
-          //   // this.blurMax = options.blur * 2
+            this.values = { 
+              ...otherOptions,
+              manualBlur: blurManuallySet ? blur : null
+            }
 
-          //   // this.elevation = options.elevation
-          //   // this.elevationMax = options.elevation * 5
-
-          //   // if (msg.type === 'pluginStartDone')
-          //   //   this.$nextTick(() => {
-          //   //     this.doneInit = true
-          //   //   })
-
-          //   break
-          // }
-          
-          default:
             break
+          }
         }
       }
     }

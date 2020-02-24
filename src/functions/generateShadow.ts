@@ -1,6 +1,5 @@
 import cloneObj from '../helpers/cloneObj'
 import newCalcColor from './calcColor'
-import mathAvg from '../helpers/mathAvg'
 
 import { CustomOptionsObject } from '../app'
 
@@ -20,18 +19,16 @@ export default ( node: Exclude<SceneNode, SliceNode | GroupNode>, options: Custo
   if (nodeFill.type !== 'SOLID')
     throw new Error('Please change the current fill to a solid one.')
 
-  const nodeRGBColor = { 
+  const nodeRGBColor = {
     r: Math.round(nodeFill.color.r * 255), 
     g: Math.round(nodeFill.color.g * 255), 
     b: Math.round(nodeFill.color.b * 255) 
   }
 
-  let shadowType: ShadowEffect['type'] = (options.inset ? 'INNER_SHADOW' : 'DROP_SHADOW') || 'DROP_SHADOW',
-      elevation = options.elevation || 5
+  let shadowType: ShadowEffect['type'] = options.inset ? 'INNER_SHADOW' : 'DROP_SHADOW',
+      elevation = options.elevation
 
-  // Get average from width & height to calculate blur
   let offset: Vector = { x: elevation, y: elevation }
-  let blur = options.blur || Math.round(mathAvg([ offset.x, offset.y ])) * 2
 
   // Dark shadow
   const colorDarkShadow: RGBA = { ...newCalcColor(nodeRGBColor, options.intensity * -1), a: .9 }
@@ -39,7 +36,7 @@ export default ( node: Exclude<SceneNode, SliceNode | GroupNode>, options: Custo
     type: shadowType,
     color: colorDarkShadow,
     offset: offset,
-    radius: Math.round(blur * 1.25),
+    radius: Math.round(options.blur * 1.25),
   })
 
   // Dark shadow (overlay on left)
@@ -47,7 +44,7 @@ export default ( node: Exclude<SceneNode, SliceNode | GroupNode>, options: Custo
     type: 'DROP_SHADOW',
     color: <RGBA>{ ...colorDarkShadow, a: .2 },
     offset: <Vector>{ x: offset.x * -1, y: offset.y },
-    radius: blur
+    radius: options.blur
   })
 
   // Dark shadow (overlay on top)
@@ -55,7 +52,7 @@ export default ( node: Exclude<SceneNode, SliceNode | GroupNode>, options: Custo
     type: 'DROP_SHADOW',
     color: <RGBA>{ ...colorDarkShadow, a: .2 },
     offset: <Vector>{ x: offset.x, y: offset.y * -1 },
-    radius: blur
+    radius: options.blur
   })
 
   // Dark shadow border-fake
@@ -72,7 +69,7 @@ export default ( node: Exclude<SceneNode, SliceNode | GroupNode>, options: Custo
     type: shadowType,
     color: colorLightShadow,
     offset: <Vector>{ x: offset.x * -1, y: offset.y * -1 },
-    radius: blur
+    radius: options.blur
   })
 
   // Light shadow border-fake
@@ -92,17 +89,4 @@ export default ( node: Exclude<SceneNode, SliceNode | GroupNode>, options: Custo
     darkBorderShadow,
     lightBorderShadow
   ]
-
-
-  const res: CustomOptionsObject = {
-    intensity: options.intensity,
-    blur: blur,
-    elevation: elevation,
-    inset: !!(shadowType === 'DROP_SHADOW'),
-    blurManuallySet: options.blurManuallySet,
-    shadowDirection: options.shadowDirection
-  }
-  
-  console.log('=> executed generateShadow.ts with res:', res)
-  return res
 }

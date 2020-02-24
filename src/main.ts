@@ -1,5 +1,5 @@
 import generateShadow from './functions/generateShadow'
-import generateParentNodeFill from './functions/generateParentNodeFill'
+// import generateParentNodeFill from './functions/generateParentNodeFill'
 
 import isEqualObj from './helpers/isEqualObj'
 
@@ -18,8 +18,6 @@ const validateCurrSelNodeType = (currSel: readonly SceneNode[]) => {
 }
 
 const setNodeShadowOptions = (node: SceneNode, value: string, overrideUI = false ) => {
-  // console.log('setNodeShadowOptions(', value, overrideUI, ')')
-
   // Store the options on the node itsself
   node.setPluginData('shadowOptions', JSON.stringify(value))
 
@@ -35,7 +33,6 @@ const getNodeShadowOptions = (node: SceneNode) => {
   let data = node.getPluginData('shadowOptions')
   return (data.length) ? JSON.parse(data) : null
 }
-
 
 // /**
 //  * Fires when the user changes his selection
@@ -53,16 +50,15 @@ const getNodeShadowOptions = (node: SceneNode) => {
 // }
 
 
+
 try {
   const currNode = validateCurrSelNodeType(figma.currentPage.selection)
-
 
   figma.showUI(__html__, {
     width: 300,
     height: 530
   })
   
-
   // // Determines complete selection change
   // figma.on('selectionchange', () => {onSelectionChange(false)})
 
@@ -77,7 +73,7 @@ try {
   // }, 50)
 
 
-  generateParentNodeFill(currNode)
+  // generateParentNodeFill(currNode)
 
 
   figma.ui.onmessage = msg => {
@@ -86,6 +82,9 @@ try {
         // Check, if there is already some stored shadow options on the selected node
         let optionsSavedOnNode = getNodeShadowOptions(currNode),
             options = msg.value.options
+
+        // console.log('options', options)
+        // console.log('optionsSavedOnNode', optionsSavedOnNode)
 
         if (!optionsSavedOnNode)
           setNodeShadowOptions(currNode, msg.value.options)
@@ -100,7 +99,6 @@ try {
         
         generateShadow(currNode, options)
         
-
         figma.ui.postMessage({ type: 'pluginStartDone' })
         
         break
