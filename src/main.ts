@@ -83,14 +83,10 @@ try {
         let optionsSavedOnNode = getNodeShadowOptions(currNode),
             options = msg.value.options
 
-        // console.log('options', options)
-        // console.log('optionsSavedOnNode', optionsSavedOnNode)
-
         if (!optionsSavedOnNode)
           setNodeShadowOptions(currNode, msg.value.options)
         else {
-          // If the given options and the currently on the node stored options are different,
-          // prefer the ones stored on the node
+          // If different, prefer the options stored directly on the node
           if (!isEqualObj(optionsSavedOnNode, msg.value.options)) {
             options = optionsSavedOnNode
             setNodeShadowOptions(currNode, options, true)
@@ -106,6 +102,7 @@ try {
 
       case 'syncOptions': {
         generateShadow(currNode, msg.value.options)
+
         // generateParentNodeFill(currNode)
 
         // Store options in Figmas LocalStorage "pluginData"

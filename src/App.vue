@@ -53,14 +53,7 @@
   }
 
   const generateValues = () => {
-    return {
-      intensity: 10,
-      elevation: 5,
-      inset: false,
-      manualBlur: null,
-      inset: false,
-      shadowDirection: 'TOP_LEFT',
-    }
+    return { intensity: 10, elevation: 5, inset: false, shadowDirection: 'TOP_LEFT', manualBlur: false }
   }
 
   export default {
@@ -74,29 +67,17 @@
     },
 
     watch: {
-      'values.intensity': function() {
-        if (this.doneInit)
-          postMsg('syncOptions', { options: this.options })
-      },
-
       'blur': function() {
         if (this.doneInit && this.values.manualBlur)
           postMsg('syncOptions', { options: this.options })
       },
 
-      'values.elevation': function() {
-        if (this.doneInit) 
-          postMsg('syncOptions', { options: this.options })
-      },
-
-      'values.inset': function() {
-        if (this.doneInit)
-          postMsg('syncOptions', { options: this.options })
-      },
-
-      'values.shadowDirection': function() {
-        if (this.doneInit)
-          postMsg('syncOptions', { options: this.options })
+      'values': {
+        handler(values) {
+          if (this.doneInit)
+            postMsg('syncOptions', { options: this.options })
+        },
+        deep: true
       }
     },
 
@@ -111,13 +92,12 @@
       },
 
       'options': function() {
+        const { manualBlur, ...otherValues } = this.values
+
         return {
-          intensity: this.values.intensity,
-          elevation: this.values.elevation,
-          inset: this.values.inset,
-          shadowDirection: this.values.shadowDirection,
+          ...otherValues,
           blur: this.blur,
-          blurManuallySet: !!this.values.manualBlur
+          blurManuallySet: !!manualBlur
         }
       }
     },

@@ -23,19 +23,19 @@ export default ( color: { r: number, g: number, b: number }, luminance: number )
 }
 
 
-export const newCalcColor = (color: { r: number, g: number, b: number }, luminance: number) => {
-  let hsl = rgbToHsl(color)
+// export const newCalcColor = (color: { r: number, g: number, b: number }, luminance: number) => {
+//   let hsl = rgbToHsl(color)
 
-  // Change hue a bit
-  hsl.h += .036
+//   // Change hue a bit
+//   hsl.h += .036
 
-  hsl.s += .7
+//   hsl.s += .7
 
-  // Change luminance to fit the current needs (lighter or darker)
-  hsl.l = Math.min(hsl.l + luminance, 1)
+//   // Change luminance to fit the current needs (lighter or darker)
+//   hsl.l = Math.min(hsl.l + luminance, 1)
 
-  const rgb = hslToRgb(hsl)
-  // console.log('rgb color', { r: rgb.r, g: rgb.g, b: rgb.b })
-  // console.log('..')
-  return rgb
-}
+//   const rgb = hslToRgb(hsl)
+//   // console.log('rgb color', { r: rgb.r, g: rgb.g, b: rgb.b })
+//   // console.log('..')
+//   return rgb
+// }
