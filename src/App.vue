@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="currSelIsValid && !showInitialStartupBtn">
     Elevation:<br>
     <div class="center">
       <input type="range" min="1" max="100" v-model.number="values.elevation"><input type="number" min="1"  max="100" v-model.number="values.elevation">
@@ -40,7 +40,15 @@
     <input type="checkbox" v-model="values.inset">
     <hr>
     <br>
-    <button @click="reset">Reset everything</button>
+    <button @click="resetValues">Reset everything</button>
+  </div>
+
+  <div v-else-if="!currSelIsValid">
+    Please select something :)
+  </div>
+
+  <div v-else>
+    <button @click="initShadow">Start</button>
   </div>
 </template>
 
@@ -62,7 +70,9 @@
     data() {
       return {
         'values': generateValues(),
-        'doneInit': false
+        'doneInit': false,
+        'currSelIsValid': false,
+        'showInitialStartupBtn': false
       }
     },
 
@@ -103,35 +113,45 @@
     },
 
     methods: {
-      reset() {
+      resetValues() {
         this.values = generateValues()
+      },
+
+      initShadow() {
+        this.resetValues()
+        postMsg('syncOptions', { options: this.options, init: true })
       }
     },
 
     created() {
       // console.log('pluginStart with', this.options)
-      postMsg('pluginStart', { options: this.options })
+      // postMsg('pluginStart', { options: this.options })
 
       onmessage = event => {
         const msg = event.data.pluginMessage
 
         switch (msg.type) {
-          case 'pluginStartDone': {
-            this.$nextTick(() => this.doneInit = true)
+          case 'currNodeChanged': {
+            console.log('currNodeChanged():', msg.value)
+            this.doneInit = false
 
-            break
-          }
+            this.currSelIsValid = msg.value.currSelIsValid
+            if (!this.currSelIsValid) 
+              break
+            
+            // If current selected node is "fresh", so has no neumorphism on it.
+            const optionsStoredOnNode = msg.value.optionsStoredOnNode
+            this.showInitialStartupBtn = !optionsStoredOnNode
+            if (this.showInitialStartupBtn)
+              break
 
-          case 'overrideOptions': {
-            // console.log('Options have been changed by main.ts. Override them in the UI.')
-
-            // Removing blur and blurManuallySet from the options object
-            const { blur, blurManuallySet, ...otherOptions } = msg.options
-
+            const { blur, blurManuallySet, ...otherOptions } = msg.value.optionsStoredOnNode
             this.values = { 
               ...otherOptions,
               manualBlur: blurManuallySet ? blur : null
             }
+
+            this.$nextTick(() => this.doneInit = true)
 
             break
           }
