@@ -1,8 +1,5 @@
 import generateShadow from './functions/generateShadow'
-// import generateParentNodeFill from './functions/generateParentNodeFill'
-
 import isEqualObj from './helpers/isEqualObj'
-
 
 
 const validateCurrSelNodeType = (currSel: readonly SceneNode[]) => {
@@ -17,16 +14,9 @@ const validateCurrSelNodeType = (currSel: readonly SceneNode[]) => {
   return currNode
 }
 
-const setNodeShadowOptions = (node: SceneNode, value: string, overrideUI = false ) => {
+const setNodeShadowOptions = (node: SceneNode, value: string ) => {
   // Store the options on the node itsself
   node.setPluginData('shadowOptions', JSON.stringify(value))
-
-  // Also, send the options to the UI if wanted.
-  if (overrideUI)
-    figma.ui.postMessage({
-      type: 'overrideOptions',
-      options: value
-    })
 }
 
 const getNodeShadowOptions = (node: SceneNode) => {
@@ -34,20 +24,20 @@ const getNodeShadowOptions = (node: SceneNode) => {
   return (data.length) ? JSON.parse(data) : null
 }
 
-// /**
-//  * Fires when the user changes his selection
-//  * @param sameNodes Always true, exept if it's called but only properties like "width", etc. changed
-//  */
-// const onSelectionChange = ( sameNodes = true ) => {
-//   console.log('Selection changed!')
+/**
+ * Fires when the user changes his selection
+ * @param sameNodes Always true, exept if it's called but only properties like "width", etc. changed
+ */
+const onSelectionChange = () => {
+  console.log('Selection changed! New selection:', figma.currentPage.selection)
 
-//   try {
-//     const newCurrSel = validateCurrSelNodeType(figma.currentPage.selection)
-//     console.log('newCurrSel:', newCurrSel)
-//   } catch (error) {
-//     figma.notify(`😏 ${error.message}`)
-//   }
-// }
+  // try {
+  //   const newCurrSel = validateCurrSelNodeType(figma.currentPage.selection)
+  //   console.log('newCurrSel:', newCurrSel)
+  // } catch (error) {
+  //   figma.notify(`😏 ${error.message}`)
+  // }
+}
 
 
 
@@ -59,8 +49,10 @@ try {
     height: 530
   })
   
-  // // Determines complete selection change
-  // figma.on('selectionchange', () => {onSelectionChange(false)})
+  // Determines complete selection change
+  figma.on('selectionchange', () => onSelectionChange())
+
+  onSelectionChange()
 
   // // Determines only properties (like height) of the curr sel changes
   // let lastTickCurrNodeValues = { width: currNode.width, height: currNode.height }
@@ -71,9 +63,6 @@ try {
   //     onSelectionChange()
   //   }
   // }, 50)
-
-
-  // generateParentNodeFill(currNode)
 
 
   figma.ui.onmessage = msg => {
@@ -89,7 +78,13 @@ try {
           // If different, prefer the options stored directly on the node
           if (!isEqualObj(optionsSavedOnNode, msg.value.options)) {
             options = optionsSavedOnNode
-            setNodeShadowOptions(currNode, options, true)
+
+            setNodeShadowOptions(currNode, options)
+
+            figma.ui.postMessage({
+              type: 'overrideOptions',
+              options: options
+            })
           }
         }
         
@@ -103,8 +98,6 @@ try {
       case 'syncOptions': {
         generateShadow(currNode, msg.value.options)
 
-        // generateParentNodeFill(currNode)
-
         // Store options in Figmas LocalStorage "pluginData"
         setNodeShadowOptions(currNode, msg.value.options)
 
@@ -115,7 +108,3 @@ try {
 } catch (error) {
   figma.closePlugin(`😏 ${error.message}`)
 }
-
-
-
-
