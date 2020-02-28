@@ -3,6 +3,11 @@ const VueLoaderPlugin = require('vue-loader/lib/plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin')
 
+const WebpackMessages = require('webpack-messages')
+
+// Only dev
+console.clear()
+
 module.exports = (env, argv) => ({
 	// This is necessary because Figma's 'eval' works differently than normal eval
 	devtool: argv.mode === 'production' ? false : 'inline-source-map',
@@ -15,6 +20,21 @@ module.exports = (env, argv) => ({
 	resolveLoader: {
 		modules: [path.join(__dirname, 'node_modules')]
 	},
+
+	// stats: {
+	// 	logging: 'info',
+		
+	// 	modules: false,
+
+	// 	// assets: false,
+	// 	builtAt: false,
+	// 	timings: false,
+	// 	version: false,
+	// 	entrypoints: false,
+	// 	hash: false
+	// },
+
+	stats: false,
 
 	module: {
 		rules: [
@@ -53,7 +73,8 @@ module.exports = (env, argv) => ({
 			chunks: ['ui'],
 		}),
 		new HtmlWebpackInlineSourcePlugin(),
-		new VueLoaderPlugin()
+		new VueLoaderPlugin(),
+		new WebpackMessages()
 	],
 
 	node: {
