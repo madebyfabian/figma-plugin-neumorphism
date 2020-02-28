@@ -94,9 +94,14 @@ export const hslToRgb = (hslObj: HSLObj) => {
       b = hue2rgb(p, q, h - 1/3);
   }
 
-  return <RGBObj>{
-    r,
-    g,
-    b
+  const returnval = <RGBObj>{
+    r: r ,
+    g: g,
+    b: b
   }
+
+
+  // console.log(returnval)
+
+  return returnval
 }

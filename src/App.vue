@@ -16,8 +16,8 @@
 
     Intensity:<br>
     <div class="center">
-      <input type="range"  min="1" max="50" v-model.number="values.intensity">
-      <input type="number" min="1" max="50" v-model.number="values.intensity">
+      <input type="range"  min="1" max="30" v-model.number="values.intensity">
+      <input type="number" min="1" max="30" v-model.number="values.intensity">
     </div>
     <br><br>
 
@@ -83,7 +83,7 @@
   }
 
   const generateValues = () => {
-    return { intensity: 10, elevation: 5, inset: false, shadowDirection: 'TOP_LEFT', manualBlur: false, fillType: 'FLAT' }
+    return { intensity: 5, elevation: 5, inset: false, shadowDirection: 'TOP_LEFT', manualBlur: false, fillType: 'FLAT' }
   }
 
   export default {

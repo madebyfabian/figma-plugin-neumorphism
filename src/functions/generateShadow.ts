@@ -11,11 +11,6 @@ const generateShadowObj = (options: { type: ShadowEffect['type'], color: RGBA, o
 
 export default ( node: CustomAllowedNodeTypes, options: CustomOptionsObject ) => {
   const nodeColor = getFillColor(node)
-  const nodeRGBColor = {
-    r: Math.round(nodeColor.r * 255), 
-    g: Math.round(nodeColor.g * 255), 
-    b: Math.round(nodeColor.b * 255) 
-  }
 
   let shadowType: ShadowEffect['type'] = options.inset ? 'INNER_SHADOW' : 'DROP_SHADOW',
       shadowTypeBorderFake: ShadowEffect['type'] = options.inset ? 'DROP_SHADOW' : 'INNER_SHADOW',
@@ -36,8 +31,8 @@ export default ( node: CustomAllowedNodeTypes, options: CustomOptionsObject ) =>
 
   const radiusBorderFake = Math.max(Math.round(mathAvg(offsetBorderFake.x, offsetBorderFake.y) * 1.25), 2)
 
-  const darkShadowColor: RGBA   = { ...calcColor(nodeRGBColor, options.intensity * -1), a: .9 }
-  const lightShadowColor: RGBA  = { ...calcColor(nodeRGBColor, options.intensity), a: .9 }
+  const darkShadowColor: RGBA   = { ...calcColor(nodeColor, options.intensity * -1), a: .9 }
+  const lightShadowColor: RGBA  = { ...calcColor(nodeColor, options.intensity), a: .9 }
 
   const generatedShadows = [
     // Dark shadow

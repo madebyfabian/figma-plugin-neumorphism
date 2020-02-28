@@ -1,9 +1,13 @@
-import generateShadow from './functions/generateShadow'
-import getStoredShadowOptions from './functions/getStoredShadowOptions'
 import { 
   SHADOW_OPTIONS_PLUGIN_DATA_KEY, 
   SHADOW_EFFECT_OBJECTS_PLUGIN_DATA_KEY
 } from './store'
+
+import generateShadow from './functions/generateShadow'
+import getStoredShadowOptions from './functions/getStoredShadowOptions'
+import getFillColor from './functions/getFillColor'
+import cloneObj from './helpers/cloneObj'
+import calcColor from './functions/calcColor'
 
 
 const validateCurrSel = () => {
@@ -15,7 +19,7 @@ const validateCurrSel = () => {
 }
 
 
-const syncFillType = ( options: CustomOptionsObject ) => {
+const syncFillType = ( currNode: CustomAllowedNodeTypes, options: CustomOptionsObject ) => {
   const fillType = options.fillType
     
   switch (fillType) {
@@ -23,9 +27,32 @@ const syncFillType = ( options: CustomOptionsObject ) => {
       console.log('get flat!')
       break;
   
-    case 'CONCAVE': case 'CONVEX':
+    case 'CONCAVE': case 'CONVEX': {
       console.log('get gradienty!')
-      break;
+
+      const currNodeFills = cloneObj(currNode.fills)
+
+      // First, get the "base" gradient color
+      const nodeColor = getFillColor(currNode)
+
+      const lighterColor: RGBA = { ...calcColor(nodeColor, -5), a: 1 }
+      const darkerColor:  RGBA = { ...calcColor(nodeColor, 5),  a: 1 }
+      const gradient: GradientPaint = {
+        type: 'GRADIENT_LINEAR',
+        gradientTransform: <Transform>[ [ 0.5, 0.5, 0 ], [ -.5, .5, 0.5 ] ],
+        gradientStops: <ReadonlyArray<ColorStop>>[
+          { position: 1, color: (fillType === 'CONCAVE') ? darkerColor : lighterColor },
+          { position: 0, color: (fillType === 'CONCAVE') ? lighterColor : darkerColor }
+        ]
+      }
+
+      currNode.fills = [
+        ...currNodeFills,
+        gradient
+      ]
+
+      break
+    }
   }
 }
 
@@ -41,6 +68,12 @@ const onSelectionChange = () => {
 
   if (!currNode)
     return
+
+
+
+  
+
+
   
   figma.ui.onmessage = msg => {
     // Store options in Figmas "pluginData"
@@ -60,7 +93,7 @@ const onSelectionChange = () => {
 
         // Tell the UI that the current selection is now a "neumorphed" one
         if (msgValue.init === true) {
-          syncFillType(msgValue.options)
+          syncFillType(currNode, msgValue.options)
           
           figma.ui.postMessage({
             type: 'currNodeChanged',
@@ -74,7 +107,7 @@ const onSelectionChange = () => {
       }
         
       case 'syncFillType': 
-        syncFillType(msgValue.options)
+        syncFillType(currNode, msgValue.options)
         break
     }
   }
