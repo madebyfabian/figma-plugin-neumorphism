@@ -1,5 +1,6 @@
 import cloneObj from '../helpers/cloneObj'
 import calcColor from './calcColor'
+import mathAvg from '../helpers/mathAvg'
 
 
 const generateShadowObj = (options: { type: ShadowEffect['type'], color: RGBA, offset: Vector, radius: number }) => {
@@ -20,9 +21,23 @@ export default ( node: CustomAllowedNodeTypes, options: CustomOptionsObject ) =>
   }
 
   let shadowType: ShadowEffect['type'] = options.inset ? 'INNER_SHADOW' : 'DROP_SHADOW',
+      shadowTypeBorderFake: ShadowEffect['type'] = options.inset ? 'DROP_SHADOW' : 'INNER_SHADOW',
       elevation = options.elevation
 
-  let offset: Vector = { x: elevation, y: elevation }
+  let offset: Vector = null
+  switch (options.shadowDirection) {
+    case 'TOP_LEFT':     offset = { x: elevation,  y: elevation  }; break
+    case 'TOP_RIGHT':    offset = { x: -elevation, y: elevation  }; break
+    case 'BOTTOM_LEFT':  offset = { x: elevation,  y: -elevation }; break
+    case 'BOTTOM_RIGHT': offset = { x: -elevation, y: -elevation }; break
+  }
+
+  const offsetBorderFake: Vector = { 
+    x: Math.round(Math.max(Math.abs(offset.x / 25), 1)), 
+    y: Math.round(Math.max(Math.abs(offset.y / 25), 1))
+  }
+
+  const radiusBorderFake = Math.max(Math.round(mathAvg(offsetBorderFake.x, offsetBorderFake.y) * 1.25), 2)
 
   const darkShadowColor: RGBA   = { ...calcColor(nodeRGBColor, options.intensity * -1), a: .9 }
   const lightShadowColor: RGBA  = { ...calcColor(nodeRGBColor, options.intensity), a: .9 }
@@ -46,7 +61,7 @@ export default ( node: CustomAllowedNodeTypes, options: CustomOptionsObject ) =>
 
     // Dark shadow (overlay on top)
     generateShadowObj({
-      type: 'DROP_SHADOW',
+      type: shadowType,
       color: <RGBA>{ ...darkShadowColor, a: .2 },
       offset: <Vector>{ x: offset.x, y: offset.y * -1 },
       radius: options.blur
@@ -54,7 +69,7 @@ export default ( node: CustomAllowedNodeTypes, options: CustomOptionsObject ) =>
 
     // Dark shadow (overlay on left)
     generateShadowObj({
-      type: 'DROP_SHADOW',
+      type: shadowType,
       color: <RGBA>{ ...darkShadowColor, a: .2 },
       offset: <Vector>{ x: offset.x * -1, y: offset.y },
       radius: options.blur
@@ -62,18 +77,18 @@ export default ( node: CustomAllowedNodeTypes, options: CustomOptionsObject ) =>
 
     // Dark border-fake
     generateShadowObj({
-      type: 'INNER_SHADOW',
+      type: shadowTypeBorderFake,
       color: <RGBA>{ ...darkShadowColor, a: .5 },
-      offset: <Vector>{ x: -1, y: -1 },
-      radius: 2
+      offset: <Vector>{ x: offsetBorderFake.x * -1, y: offsetBorderFake.y * -1 },
+      radius: radiusBorderFake
     }),
 
     // Light border-fake
     generateShadowObj({
-      type: 'INNER_SHADOW',
+      type: shadowTypeBorderFake,
       color: <RGBA>{ ...lightShadowColor, a: .3 },
-      offset: <Vector>{ x: 1, y: 1 },
-      radius: 2
+      offset: offsetBorderFake,
+      radius: radiusBorderFake
     })
   ]
 
