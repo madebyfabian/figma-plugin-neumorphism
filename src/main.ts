@@ -1,59 +1,31 @@
 import generateShadow from './functions/generateShadow'
-import cloneObj from './helpers/cloneObj'
-import isEqualObj from './helpers/isEqualObj'
-
-
-const SHADOW_OPTIONS_PLUGIN_DATA_KEY = 'shadowOptions',
-      SHADOW_EFFECT_OBJECTS_PLUGIN_DATA_KEY = 'shadowEffectObjects'
+import getStoredShadowOptions from './functions/getStoredShadowOptions'
+import { 
+  SHADOW_OPTIONS_PLUGIN_DATA_KEY, 
+  SHADOW_EFFECT_OBJECTS_PLUGIN_DATA_KEY
+} from './store'
 
 
 const validateCurrSel = () => {
   const currSelAll = figma.currentPage.selection
-  if (currSelAll.length !== 1)
+  if (currSelAll.length !== 1) 
     return null
-
   const [ currNode ] = currSelAll
-
   return (currNode.type === 'SLICE' || currNode.type === 'GROUP') ? null : currNode
 }
 
 
-const getPluginData = ( node: CustomAllowedNodeTypes, key: string ) => {
-  let data = node.getPluginData(key)
-  return (!data.length) ? null : JSON.parse(data)
-}
-
-
-/**
- * Returns the "shadowOptions" pluginData stored on the given node. 
- * @param node A figma node object.
- */
-const getNodeShadowOptions = (node: CustomAllowedNodeTypes) => {
-  try {
-    if (!node) 
-      throw new Error
-
-    const storedOptions: CustomOptionsObject = getPluginData(node, SHADOW_OPTIONS_PLUGIN_DATA_KEY)
-    if (!storedOptions)
-      throw new Error
-
-    const storedShadows: ShadowEffect[] = getPluginData(node, SHADOW_EFFECT_OBJECTS_PLUGIN_DATA_KEY)
-
-    const currShadows: ShadowEffect[] = cloneObj(node.effects).filter((effect: Effect) => effect.type === 'INNER_SHADOW' || effect.type === 'DROP_SHADOW')
-    if (!currShadows.length)
-      throw new Error
-
-    // Now check if the current shadows and the stored ones are the same.
-    for (const storedShadow of storedShadows) {
-      // Find the same storedShadow object in the currentShadows array of objects.
-      const foundStoredShadowInCurrShadows = currShadows.find(( currShadow: ShadowEffect ) => isEqualObj(currShadow, storedShadow))
-      if (!foundStoredShadowInCurrShadows)
-        throw new Error
-    }
+const syncFillType = ( options: CustomOptionsObject ) => {
+  const fillType = options.fillType
     
-    return storedOptions
-  } catch (error) {
-    return null
+  switch (fillType) {
+    case 'FLAT':
+      console.log('get flat!')
+      break;
+  
+    case 'CONCAVE': case 'CONVEX':
+      console.log('get gradienty!')
+      break;
   }
 }
 
@@ -64,32 +36,46 @@ const onSelectionChange = () => {
   // Tell the UI that the selection has changed
   figma.ui.postMessage({
     type: 'currNodeChanged',
-    value: { currSelIsValid: !!currNode, optionsStoredOnNode: getNodeShadowOptions(currNode) }
+    value: { currSelIsValid: !!currNode, optionsStoredOnNode: getStoredShadowOptions(currNode) }
   })
 
   if (!currNode)
     return
   
   figma.ui.onmessage = msg => {
-    if (msg.type === 'syncOptions') {
-      const msgValue = msg.value,
-            options = msg.value.options
+    // Store options in Figmas "pluginData"
+    const msgValue = msg.value
+    if (!msgValue?.options)
+      return
 
-      console.log('syncOptions() =>', options)
-      const generatedShadowObjects = generateShadow(currNode, options)
+    currNode.setPluginData(SHADOW_OPTIONS_PLUGIN_DATA_KEY, JSON.stringify(msgValue.options))
+    console.log(`${msg.type}() in figma.ui.onmessage =>`, msgValue)
 
-      // Store generated shadow objects in Figas "pluginData"
-      currNode.setPluginData(SHADOW_EFFECT_OBJECTS_PLUGIN_DATA_KEY, JSON.stringify(generatedShadowObjects))
+    switch (msg.type) {
+      case 'syncShadowOptions': {
+        const generatedShadowObjects = generateShadow(currNode, msgValue.options)
 
-      // Store options in Figmas "pluginData"
-      currNode.setPluginData(SHADOW_OPTIONS_PLUGIN_DATA_KEY, JSON.stringify(options))
+        // Store generated shadow objects in Figas "pluginData"
+        currNode.setPluginData(SHADOW_EFFECT_OBJECTS_PLUGIN_DATA_KEY, JSON.stringify(generatedShadowObjects))
 
-      if ('init' in msgValue && msgValue.init === true)
         // Tell the UI that the current selection is now a "neumorphed" one
-        figma.ui.postMessage({
-          type: 'currNodeChanged',
-          value: { currSelIsValid: true, optionsStoredOnNode: getNodeShadowOptions(currNode) }
-        })
+        if (msgValue.init === true) {
+          syncFillType(msgValue.options)
+          
+          figma.ui.postMessage({
+            type: 'currNodeChanged',
+            value: { 
+              currSelIsValid: true, 
+              optionsStoredOnNode: getStoredShadowOptions(currNode) 
+            }
+          })
+        }
+        break
+      }
+        
+      case 'syncFillType': 
+        syncFillType(msgValue.options)
+        break
     }
   }
 }
@@ -98,7 +84,7 @@ const onSelectionChange = () => {
 try {
   figma.showUI(__html__, {
     width: 300,
-    height: 530
+    height: 540
   })
 
   // On plugin start.
