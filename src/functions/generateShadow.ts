@@ -1,6 +1,7 @@
 import cloneObj from '../helpers/cloneObj'
 import calcColor from './calcColor'
 import mathAvg from '../helpers/mathAvg'
+import getFillColor from './getFillColor'
 
 
 const generateShadowObj = (options: { type: ShadowEffect['type'], color: RGBA, offset: Vector, radius: number }) => {
@@ -9,15 +10,11 @@ const generateShadowObj = (options: { type: ShadowEffect['type'], color: RGBA, o
 
 
 export default ( node: CustomAllowedNodeTypes, options: CustomOptionsObject ) => {
-  let nodeFill: Paint = cloneObj(node.fills).pop()
-
-  if (nodeFill.type !== 'SOLID')
-    throw new Error('Please change the current fill to a solid one.')
-
+  const nodeColor = getFillColor(node)
   const nodeRGBColor = {
-    r: Math.round(nodeFill.color.r * 255), 
-    g: Math.round(nodeFill.color.g * 255), 
-    b: Math.round(nodeFill.color.b * 255) 
+    r: Math.round(nodeColor.r * 255), 
+    g: Math.round(nodeColor.g * 255), 
+    b: Math.round(nodeColor.b * 255) 
   }
 
   let shadowType: ShadowEffect['type'] = options.inset ? 'INNER_SHADOW' : 'DROP_SHADOW',

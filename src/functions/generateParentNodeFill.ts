@@ -1,5 +1,4 @@
 import cloneObj from '../helpers/cloneObj'
-import isEqualObj from '../helpers/isEqualObj'
 
 
 // Checks if the parent of the curr selected node needs to be painted with the same color as the curr sel.

@@ -132,7 +132,7 @@
 
         switch (msg.type) {
           case 'currNodeChanged': {
-            console.log('currNodeChanged():', msg.value)
+            // console.log('currNodeChanged():', msg.value)
             this.doneInit = false
 
             this.currSelIsValid = msg.value.currSelIsValid

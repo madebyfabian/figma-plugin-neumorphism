@@ -72,16 +72,17 @@ const onSelectionChange = () => {
   
   figma.ui.onmessage = msg => {
     if (msg.type === 'syncOptions') {
-      const msgValue = msg.value
+      const msgValue = msg.value,
+            options = msg.value.options
 
-      console.log('syncOptions() =>', msgValue.options)
-      const generatedShadowObjects = generateShadow(currNode, msgValue.options)
+      console.log('syncOptions() =>', options)
+      const generatedShadowObjects = generateShadow(currNode, options)
 
       // Store generated shadow objects in Figas "pluginData"
       currNode.setPluginData(SHADOW_EFFECT_OBJECTS_PLUGIN_DATA_KEY, JSON.stringify(generatedShadowObjects))
 
       // Store options in Figmas "pluginData"
-      currNode.setPluginData(SHADOW_OPTIONS_PLUGIN_DATA_KEY, JSON.stringify(msgValue.options))
+      currNode.setPluginData(SHADOW_OPTIONS_PLUGIN_DATA_KEY, JSON.stringify(options))
 
       if ('init' in msgValue && msgValue.init === true)
         // Tell the UI that the current selection is now a "neumorphed" one
