@@ -1,6 +1,10 @@
 import generateShadow from './functions/generateShadow'
-// import isEqualObj from './helpers/isEqualObj'
-// import cloneObj from './helpers/cloneObj'
+import cloneObj from './helpers/cloneObj'
+import isEqualObj from './helpers/isEqualObj'
+
+
+const SHADOW_OPTIONS_PLUGIN_DATA_KEY = 'shadowOptions',
+      SHADOW_EFFECT_OBJECTS_PLUGIN_DATA_KEY = 'shadowEffectObjects'
 
 
 const validateCurrSel = () => {
@@ -14,23 +18,46 @@ const validateCurrSel = () => {
 }
 
 
-const getNodeShadowOptions = (node: SceneNode) => {
-  if (!node) return null
-  let data = node.getPluginData('shadowOptions')
-  return (data.length) ? JSON.parse(data) : null
+const getPluginData = ( node: CustomAllowedNodeTypes, key: string ) => {
+  let data = node.getPluginData(key)
+  return (!data.length) ? null : JSON.parse(data)
 }
 
 
-// const getNodeFill = ( node: Exclude<SceneNode, SliceNode | GroupNode> ) => {
-//   let fills = cloneObj(node.fills).filter((fill: Paint) => fill.type === 'SOLID')
-//   if (fills.length === 0)
-//     return null
+/**
+ * Returns the "shadowOptions" pluginData stored on the given node. 
+ * @param node A figma node object.
+ */
+const getNodeShadowOptions = (node: CustomAllowedNodeTypes) => {
+  try {
+    if (!node) 
+      throw new Error
 
-//   return fills[0]
-// }
+    const storedOptions: CustomOptionsObject = getPluginData(node, SHADOW_OPTIONS_PLUGIN_DATA_KEY)
+    if (!storedOptions)
+      throw new Error
+
+    const storedShadows: ShadowEffect[] = getPluginData(node, SHADOW_EFFECT_OBJECTS_PLUGIN_DATA_KEY)
+
+    const currShadows: ShadowEffect[] = cloneObj(node.effects).filter((effect: Effect) => effect.type === 'INNER_SHADOW' || effect.type === 'DROP_SHADOW')
+    if (!currShadows.length)
+      throw new Error
+
+    // Now check if the current shadows and the stored ones are the same.
+    for (const storedShadow of storedShadows) {
+      // Find the same storedShadow object in the currentShadows array of objects.
+      const foundStoredShadowInCurrShadows = currShadows.find(( currShadow: ShadowEffect ) => isEqualObj(currShadow, storedShadow))
+      if (!foundStoredShadowInCurrShadows)
+        throw new Error
+    }
+    
+    return storedOptions
+  } catch (error) {
+    return null
+  }
+}
 
 
-// let onSelectionPropertiesChangeInterval: any
 const onSelectionChange = () => {
   const currNode = validateCurrSel()
 
@@ -42,34 +69,19 @@ const onSelectionChange = () => {
 
   if (!currNode)
     return
-
-  // Determines if only properties of the currently selected nodes changes
-  // clearInterval(onSelectionPropertiesChangeInterval)
-
-  // let lastTick = getNodeFill(currNode)
-  // onSelectionPropertiesChangeInterval = setInterval(() => {
-  //   let thisTick = getNodeFill(currNode)
-
-  //   if (!isEqualObj(thisTick, lastTick)) {
-  //     lastTick = thisTick
-
-  //     const currNodeOptions = getNodeShadowOptions(currNode)
-  //     if (currNodeOptions)
-  //       generateShadow(currNode, currNodeOptions)
-
-  //     console.log('color is not the same anymore!!!!')
-  //   }
-  // }, 50)
   
   figma.ui.onmessage = msg => {
     if (msg.type === 'syncOptions') {
       const msgValue = msg.value
 
       console.log('syncOptions() =>', msgValue.options)
-      generateShadow(currNode, msgValue.options)
+      const generatedShadowObjects = generateShadow(currNode, msgValue.options)
 
-      // Store options in Figmas LocalStorage "pluginData"
-      currNode.setPluginData('shadowOptions', JSON.stringify(msgValue.options))
+      // Store generated shadow objects in Figas "pluginData"
+      currNode.setPluginData(SHADOW_EFFECT_OBJECTS_PLUGIN_DATA_KEY, JSON.stringify(generatedShadowObjects))
+
+      // Store options in Figmas "pluginData"
+      currNode.setPluginData(SHADOW_OPTIONS_PLUGIN_DATA_KEY, JSON.stringify(msgValue.options))
 
       if ('init' in msgValue && msgValue.init === true)
         // Tell the UI that the current selection is now a "neumorphed" one
@@ -88,8 +100,6 @@ try {
     width: 300,
     height: 530
   })
-
-  console.log(figma.apiVersion)
 
   // On plugin start.
   onSelectionChange()

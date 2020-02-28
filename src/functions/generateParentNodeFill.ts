@@ -30,7 +30,7 @@ const parentNodeNeedsColorPaint = (node, currSelColor: RGB) => {
  * If parent node shall be painted in the same color as the curr sel.
  * @deprecated Will not be needed eventually.
  */
-export default ( node: Exclude<SceneNode, SliceNode | GroupNode> ) => {
+export default ( node: CustomAllowedNodeTypes ) => {
   let nodeFill: Paint = cloneObj(node.fills).pop()
 
   if (nodeFill.type !== 'SOLID')

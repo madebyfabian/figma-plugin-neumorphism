@@ -1,14 +1,13 @@
 import cloneObj from '../helpers/cloneObj'
 import calcColor from './calcColor'
 
-import { CustomOptionsObject } from '../app'
 
 const generateShadowObj = (options: { type: ShadowEffect['type'], color: RGBA, offset: Vector, radius: number }) => {
   return <ShadowEffect> { ...options, blendMode: 'NORMAL', visible: true }
 }
 
 
-export default ( node: Exclude<SceneNode, SliceNode | GroupNode>, options: CustomOptionsObject ) => {
+export default ( node: CustomAllowedNodeTypes, options: CustomOptionsObject ) => {
   let nodeFill: Paint = cloneObj(node.fills).pop()
 
   if (nodeFill.type !== 'SOLID')
@@ -28,7 +27,7 @@ export default ( node: Exclude<SceneNode, SliceNode | GroupNode>, options: Custo
   const darkShadowColor: RGBA   = { ...calcColor(nodeRGBColor, options.intensity * -1), a: .9 }
   const lightShadowColor: RGBA  = { ...calcColor(nodeRGBColor, options.intensity), a: .9 }
 
-  const shadows = [
+  const generatedShadows = [
     // Dark shadow
     generateShadowObj({
       type: shadowType,
@@ -78,13 +77,14 @@ export default ( node: Exclude<SceneNode, SliceNode | GroupNode>, options: Custo
     })
   ]
 
-  node.effects = [
-    // Adding our generated shadows
-    ...shadows,
+  // All the already existing blur effects
+  const existingBlurEffects = cloneObj(node.effects).filter((effect: Effect) => effect.type === 'BACKGROUND_BLUR' || effect.type === 'LAYER_BLUR')
 
-    // Adding all the already existing blur effects
-    ...cloneObj(node.effects).filter((effect: Effect) => effect.type === 'BACKGROUND_BLUR' || effect.type === 'LAYER_BLUR')
-  ]
+  // Adding our generated shadows
+  node.effects = generatedShadows
+  const returnVal = node.effects
 
-  return shadows
+  node.effects = [ ...generatedShadows, ...existingBlurEffects ]
+
+  return returnVal
 }

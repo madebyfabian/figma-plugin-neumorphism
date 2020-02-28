@@ -43,12 +43,12 @@
     <button @click="resetValues">Reset everything</button>
   </div>
 
-  <div v-else-if="!currSelIsValid">
+  <div v-else-if="!currSelIsValid" class="center-container center">
     Please select something :)
   </div>
 
-  <div v-else>
-    <button @click="initShadow">Start</button>
+  <div v-else class="center-container center">
+    <button @click="initShadow">Neumorph' it!</button>
   </div>
 </template>
 
@@ -218,5 +218,9 @@ input:focus {
 input[type="number"] {
   width: 50px;
   border: 1px solid #f7f7f8;
+}
+
+.center-container {
+  height: calc(100vh - 40px);
 }
 </style>

@@ -20,5 +20,6 @@
 		"vue-template-compiler": "^2.6.11",
 		"webpack": "^4.41.6",
 		"webpack-cli": "^3.3.11"
-	}
+	},
+	"dependencies": {}
 }
