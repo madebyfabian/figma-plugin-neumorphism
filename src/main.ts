@@ -6,7 +6,6 @@ import {
 import generateShadow from './functions/generateShadow'
 import getStoredShadowOptions from './functions/getStoredShadowOptions'
 import getFillColor from './functions/getFillColor'
-import cloneObj from './helpers/cloneObj'
 import calcColor from './functions/calcColor'
 
 
@@ -21,39 +20,33 @@ const validateCurrSel = () => {
 
 const syncFillType = ( currNode: CustomAllowedNodeTypes, options: CustomOptionsObject ) => {
   const fillType = options.fillType
-    
-  switch (fillType) {
-    case 'FLAT':
-      console.log('get flat!')
-      break;
-  
-    case 'CONCAVE': case 'CONVEX': {
-      console.log('get gradienty!')
 
-      const currNodeFills = cloneObj(currNode.fills)
+  // First, get the "base" color
+  const nodeColor = getFillColor(currNode)
+  console.log(nodeColor)
 
-      // First, get the "base" gradient color
-      const nodeColor = getFillColor(currNode)
+  let generatedPaint: SolidPaint | GradientPaint
 
-      const lighterColor: RGBA = { ...calcColor(nodeColor, -5), a: 1 }
-      const darkerColor:  RGBA = { ...calcColor(nodeColor, 5),  a: 1 }
-      const gradient: GradientPaint = {
-        type: 'GRADIENT_LINEAR',
-        gradientTransform: <Transform>[ [ 0.5, 0.5, 0 ], [ -.5, .5, 0.5 ] ],
-        gradientStops: <ReadonlyArray<ColorStop>>[
-          { position: 1, color: (fillType === 'CONCAVE') ? darkerColor : lighterColor },
-          { position: 0, color: (fillType === 'CONCAVE') ? lighterColor : darkerColor }
-        ]
-      }
+  if (fillType === 'FLAT')
+    generatedPaint = <SolidPaint>{
+      type: 'SOLID',
+      color: {  r: nodeColor.r / 255, g: nodeColor.g / 255, b: nodeColor.b / 255 }
+    }
+  else {
+    const lighterColor: RGBA = { ...calcColor(nodeColor, -5), a: 1 }
+    const darkerColor:  RGBA = { ...calcColor(nodeColor, 5),  a: 1 }
 
-      currNode.fills = [
-        ...currNodeFills,
-        gradient
+    generatedPaint = <GradientPaint>{
+      type: 'GRADIENT_LINEAR',
+      gradientTransform: <Transform>[ [ 0.5, 0.5, 0 ], [ -.5, .5, 0.5 ] ],
+      gradientStops: <ReadonlyArray<ColorStop>>[
+        { position: 1, color: (fillType === 'CONCAVE') ? darkerColor : lighterColor },
+        { position: 0, color: (fillType === 'CONCAVE') ? lighterColor : darkerColor }
       ]
-
-      break
     }
   }
+
+  currNode.fills = [ generatedPaint ]
 }
 
 

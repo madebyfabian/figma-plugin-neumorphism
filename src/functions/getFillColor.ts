@@ -2,8 +2,8 @@ import cloneObj from '../helpers/cloneObj'
 import mathAvg from '../helpers/mathAvg'
 
 
-const getFill = ( nodeFill: Paint ) => {
-  switch (nodeFill.type) {
+const getFill = ( node: CustomAllowedNodeTypes, nodeFill: Paint ) => {
+  switch (nodeFill?.type) {
     case 'SOLID': 
       return <RGB>nodeFill.color
 
@@ -19,8 +19,18 @@ const getFill = ( nodeFill: Paint ) => {
       return <RGB>{ r: mathAvg(...colorValues.r), g: mathAvg(...colorValues.g), b: mathAvg(...colorValues.b) }
     }
 
-    default:
-      return <RGB>{ r: 1, g: 1, b: 1 }
+    default: {
+      // Either there is no fill on the node, or it's an image. Try to get a fill from the parent node.
+      const parentNode = node.parent
+
+      if (parentNode.type === 'DOCUMENT' || parentNode.type === 'PAGE' || parentNode.type === 'SLICE' || parentNode.type === 'GROUP')
+        return <RGB>{ r: 1, g: 1, b: 1 }
+
+      const parentNodeFill: Paint = cloneObj(parentNode.fills).pop()
+
+      // Self calling the function to generate a returnable color of the parent fill.
+      return getFill(parentNode, parentNodeFill)
+    }
   }
 }
 
@@ -30,7 +40,7 @@ const getFill = ( nodeFill: Paint ) => {
  */
 export default ( node: CustomAllowedNodeTypes ) => {
   const nodeFill: Paint = cloneObj(node.fills).pop()
-  const returnFill = getFill(nodeFill)
+  const returnFill = getFill(node, nodeFill)
 
   return {
     r: Math.round(returnFill.r * 255), 
