@@ -16,19 +16,25 @@ export default ( node: CustomAllowedNodeTypes, options: CustomOptionsObject ) =>
       shadowTypeBorderFake: ShadowEffect['type'] = options.inset ? 'DROP_SHADOW' : 'INNER_SHADOW',
       elevation = options.elevation
 
-  let offset: Vector = null
+  let offset: Vector
   switch (options.shadowDirection) {
-    case 'TOP_LEFT':     offset = { x: elevation,  y: elevation  }; break
-    case 'TOP_RIGHT':    offset = { x: -elevation, y: elevation  }; break
-    case 'BOTTOM_LEFT':  offset = { x: elevation,  y: -elevation }; break
+    case 'TOP_LEFT':     offset = { x:  elevation, y:  elevation }; break
+    case 'TOP_RIGHT':    offset = { x: -elevation, y:  elevation }; break
+    case 'BOTTOM_LEFT':  offset = { x:  elevation, y: -elevation }; break
     case 'BOTTOM_RIGHT': offset = { x: -elevation, y: -elevation }; break
   }
 
-  const offsetBorderFake: Vector = { 
-    x: Math.round(Math.max(Math.abs(offset.x / 25), 1)), 
-    y: Math.round(Math.max(Math.abs(offset.y / 25), 1))
+  // Calc border fake offset
+  const elevationBorderFake = Math.round(Math.max(Math.abs(elevation / 25), 1))
+  let offsetBorderFake: Vector
+  switch (options.shadowDirection) {
+    case 'TOP_LEFT':     offsetBorderFake = { x:  elevationBorderFake,  y:  elevationBorderFake }; break
+    case 'TOP_RIGHT':    offsetBorderFake = { x: -elevationBorderFake,  y:  elevationBorderFake }; break
+    case 'BOTTOM_LEFT':  offsetBorderFake = { x:  elevationBorderFake,  y: -elevationBorderFake }; break
+    case 'BOTTOM_RIGHT': offsetBorderFake = { x: -elevationBorderFake,  y: -elevationBorderFake }; break
   }
 
+  // Calc border fake blur radius
   const radiusBorderFake = Math.max(Math.round(mathAvg(offsetBorderFake.x, offsetBorderFake.y) * 1.25), 2)
 
   const darkShadowColor: RGBA   = { ...calcColor(nodeColor, options.intensity * -1), a: .9 }
