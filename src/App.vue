@@ -93,11 +93,23 @@
       </div>
 
       <div class="item">
-        Test
+        <h1 class="item__headline">Shape</h1>
+        <RadioFieldset :value.sync="values.fillType" name="shape" :fields="[
+          { value: 'FLAT' },
+          { value: 'CONCAVE' },
+          { value: 'CONVEX' },
+          { value: 'INSET' }
+        ]" />
       </div>
 
       <div class="item">
-        Test
+        <h1 class="item__headline">Light source</h1>
+        <RadioFieldset :value.sync="values.shadowDirection" name="light-source" :fields="[
+          { value: 'TOP_LEFT' },
+          { value: 'TOP_RIGHT' },
+          { value: 'BOTTOM_LEFT' },
+          { value: 'BOTTOM_RIGHT' }
+        ]" />
       </div>
 
       <div class="item item--bottom-bar">
@@ -114,12 +126,14 @@
         }
 
   import Slider from './components/Slider'
+  import RadioFieldset from './components/RadioFieldset'
 
   export default {
     name: "App",
 
     components: {
-      Slider
+      Slider,
+      RadioFieldset
     },
 
     data() {
@@ -168,6 +182,7 @@
 
     methods: {
       syncShadowOptions( init = false ) {
+        
         if (!init && !this.doneInit)
           return 
 
@@ -285,7 +300,7 @@
         font-size: 14px;
         line-height: 16px;
         letter-spacing: -0.015em;
-        margin: 0;
+        margin: 0 0 1rem;
       }
 
       &__img {
