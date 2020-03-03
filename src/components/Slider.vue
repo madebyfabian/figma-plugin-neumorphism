@@ -1,9 +1,15 @@
 <template>
   <div class="slider">
-    <div class="slider__track-progress" :style="{ 'width': `${value}%` }"></div>
-    <input class="slider__native-input" type="range" min="1" max="100" v-model="value">
-
-    <span v-text=value></span>
+    <div class="slider__track-progress" :style="{ 'width': trackProgressCSS }"></div>
+    
+    <input 
+      :min="min"
+      :max="max" 
+      :step="step"
+      v-model.number="compValue"
+      type="range"
+    />
+    <div class="slider__popover" :style="{ 'left': trackProgressCSS }" :data-value="value"></div>
   </div>
 </template>
 
@@ -11,25 +17,42 @@
   export default {
     name: 'Slider',
 
-    data() {
-      return {
-        value: 0
+    props: {
+      'min': {
+        type: String,
+        default: "1"
+      },
+      'max': {
+        type: String,
+        default: "100"
+      },
+      'step': {
+        type: String,
+        default: "1"
+      },
+      'value': {
+        type: Number,
+        required: true
       }
     },
 
-    methods: {
-      knobMouseDown(e) {
-        this.i += 1
-        console.log('fuck yeah!', e.clientX)
+    computed: {
+      'trackProgressCSS'() {
+        const width = Math.round((this.value - this.min) / (this.max - this.min) * 100),
+              pos   = ((50 - width) * 2 / 100 * 8)
+
+        return `calc(${width}% + ${pos}px)`
+      },
+
+      'compValue': {
+        get() { return this.value },
+        set(newValue) { this.$emit('update:value', newValue) }
       }
     }
   }
 </script>
 
 <style lang="scss" scoped>
-
-
-
   .slider {
     height: 1rem;
     width: 100%;
@@ -40,22 +63,42 @@
       position: absolute;
     }
 
-    @at-root .using-mouse .slider {
-      background: green;
-    }
-
     &__track-progress {
       height: .25rem;
-      width: 100%;
+      max-width: 100%;
       background: #808080;
-      border-radius: .25rem;
-      overflow: hidden;
-      transform: translateY(.375rem);
       z-index: 1;
       pointer-events: none;
+      border-radius: .25rem;
+      margin: .375rem 0 0 0;
     }
 
-    &__native-input {
+    &__popover {
+      margin: -1.5rem 0 0 -.5rem;
+      height: 1.25rem;
+      width: 1rem;
+      z-index: 2;
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+      transform: translateY(.25rem);
+      opacity: 0;
+      transition: opacity .15s ease, transform .15s ease;
+      
+      &::after {
+        content: attr(data-value);
+        position: relative;
+        z-index: 3;
+        color: #555;
+        background: #E5E5E5;
+        border-radius: 1rem;
+        padding: 0 .5rem;
+        display: inline-flex;
+        align-items: center;
+      }
+    }
+
+    input[type=range] {
       -webkit-appearance: none;
       width: 100%;
       margin: 0;
@@ -63,11 +106,14 @@
       z-index: 0;
       cursor: pointer;
 
-      &:focus {
-        outline: none;
+      @at-root .using-keyboard input[type=range]:focus, &:hover {
+        & + .slider__popover {
+          opacity: 1;
+          transform: none;
+        }
 
-        &::-webkit-slider-runnable-track, &::-webkit-slider-thumb {
-          box-shadow: 0 0 0 3px rgba(#4D90FE, .5);
+        &::-webkit-slider-thumb {
+          transform: scale(1.25);
         }
       }
 
@@ -90,16 +136,7 @@
         margin-top: -.375rem;
         transition: transform .1s ease;
         box-shadow: 0px 2px 4px rgba(87, 116, 138, 0.25);
-
-        &:hover {
-          transform: scale(1.25);
-        }
       }
-    }
-
-    span {
-      position: absolute;
-      bottom: -2rem;
     }
   }
 </style>

@@ -73,55 +73,54 @@
   </div> -->
 
   
-  <div :class="a11yClass" @mouseenter="() => a11yClassChange(false)">
-    <Slider />
-  </div>
 
-  <!-- <div class="grid">
-    <div class="item">
-      <h1 class="item__headline">Elevation</h1>
-      <div class="item__img">
-        <img src="./assets/preview-image__elevation.svg" alt="Elevation">
+  <main :class="a11yClass">
+    <div class="grid">
+      <div class="item">
+        <h1 class="item__headline">Elevation</h1>
+        <div class="item__img">
+          <img src="./assets/preview-image__elevation.svg" alt="Elevation">
+        </div>
+        <Slider min="1" max="100" :value.sync="values.elevation" />
       </div>
-      
-    </div>
 
-    <div class="item">
-      Test
-    </div>
+      <div class="item">
+        <h1 class="item__headline">Intensity</h1>
+        <div class="item__img">
+          <img src="./assets/preview-image__intensity.svg" alt="Intensity">
+        </div>
+        <Slider min="1" max="60" :value.sync="values.intensity" />
+      </div>
 
-    <div class="item">
-      Test
-    </div>
+      <div class="item">
+        Test
+      </div>
 
-    <div class="item">
-      Test
-    </div>
+      <div class="item">
+        Test
+      </div>
 
-    <div class="item item--bottom-bar">
-      Test
+      <div class="item item--bottom-bar">
+        Test
+      </div>
     </div>
-  </div> -->
+  </main>
 </template>
 
 <script>
-  const postMsg = (type, value) => {
-    // console.log('=> App.vue is executing parent.postMessage() => to main.ts:\n', `    ${type}`, value)
-    parent.postMessage({ pluginMessage: { 
-      type, value
-    }}, '*')
-  }
-
-  const generateValues = () => {
-    return { intensity: 10, elevation: 5, shadowDirection: 'TOP_LEFT', manualBlur: false, fillType: 'FLAT' }
-  }
+  const postMsg = (type, value) => parent.postMessage({ pluginMessage: { type, value }}, '*'),
+        generateValues = () => {
+          return { intensity: 10, elevation: 5, shadowDirection: 'TOP_LEFT', manualBlur: false, fillType: 'FLAT' }
+        }
 
   import Slider from './components/Slider'
 
   export default {
     name: "App",
 
-    components: {Slider},
+    components: {
+      Slider
+    },
 
     data() {
       return {
@@ -237,9 +236,9 @@
     },
 
     mounted() {
-      window.addEventListener('keydown', function(e) {
-        this.a11yClassChange(true)
-      }.bind(this));
+      window.addEventListener('keydown', (e) => this.a11yClassChange(true))
+      window.addEventListener('mousedown', (e) => this.a11yClassChange(false))
+      window.addEventListener('touchstart', (e) => this.a11yClassChange(false))
     }
   };
 </script>
@@ -247,6 +246,11 @@
 <style lang="scss">
   * {
     box-sizing: border-box;
+    &:focus { outline: none }
+  }
+
+  .using-keyboard *:focus {
+    box-shadow: 0 0 0 3px rgba(#4D90FE, .33);
   }
   
   #app {
@@ -281,7 +285,7 @@
         font-size: 14px;
         line-height: 16px;
         letter-spacing: -0.015em;
-        margin: 0 0 1rem;
+        margin: 0;
       }
 
       &__img {
@@ -289,10 +293,12 @@
         width: 10rem;
         background: rgba(#000, .03);
         border-radius: 1rem;
+        margin: 1rem 0;
 
         img {
           width: 100%;
           height: auto;
+          pointer-events: none;
         }
       }
     }
