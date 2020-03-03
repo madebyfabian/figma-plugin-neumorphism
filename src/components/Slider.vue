@@ -93,8 +93,7 @@
         background: #E5E5E5;
         border-radius: 1rem;
         padding: 0 .5rem;
-        display: inline-flex;
-        align-items: center;
+        line-height: 1.25rem;
       }
     }
 
