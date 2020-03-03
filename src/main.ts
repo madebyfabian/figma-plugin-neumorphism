@@ -79,7 +79,7 @@ const onSelectionChange = () => {
         // Reset stored shadows
         setPluginData(currNode, SHADOW_EFFECT_OBJECTS_PLUGIN_DATA_KEY, '')
 
-        figma.notify('😲 Removed neumorphic effect')
+        figma.notify('😵 Removed neumorphic effect')
 
         break
     }
@@ -96,8 +96,8 @@ try {
   // On plugin start.
   onSelectionChange()
   
-  // Determines complete selection change (other nodes)
+  // On selection change
   figma.on('selectionchange', () => onSelectionChange())
 } catch (error) {
-  figma.closePlugin(`😏 ${error.message}`)
+  figma.closePlugin(`🤨 ${error.message}`)
 }
