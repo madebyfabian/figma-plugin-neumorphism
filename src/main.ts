@@ -67,7 +67,7 @@ const onSelectionChange = () => {
         syncShadowOptions(currNode, options)
 
         break
-  
+
 
       case 'removeEffect': 
         // Remove all effects
@@ -78,6 +78,8 @@ const onSelectionChange = () => {
 
         // Reset stored shadows
         setPluginData(currNode, SHADOW_EFFECT_OBJECTS_PLUGIN_DATA_KEY, '')
+
+        figma.notify('😲 Removed neumorphic effect')
 
         break
     }
