@@ -2,6 +2,22 @@ import cloneObj from '../helpers/cloneObj'
 import mathAvg from '../helpers/mathAvg'
 
 
+/**
+ * @returns The "highest" fill color of a node in format { r: 255, g: 255, b: 255 }. If the node has a gradient fill, it returns the average color.
+ */
+export default ( node: CustomAllowedNodeTypes ) => {
+  const nodeFill: Paint = cloneObj(node.fills).pop()
+  const returnFill = getFill(node, nodeFill)
+
+  return {
+    r: Math.round(returnFill.r * 255), 
+    g: Math.round(returnFill.g * 255), 
+    b: Math.round(returnFill.b * 255) 
+  }
+}
+
+
+// Helper.
 const getFill = ( node: CustomAllowedNodeTypes, nodeFill: Paint ) => {
   switch (nodeFill?.type) {
     case 'SOLID': 
@@ -31,20 +47,5 @@ const getFill = ( node: CustomAllowedNodeTypes, nodeFill: Paint ) => {
       // Self calling the function to generate a returnable color of the parent fill.
       return getFill(parentNode, parentNodeFill)
     }
-  }
-}
-
-
-/**
- * @returns The "highest" fill color of a node in format { r: 255, g: 255, b: 255 }. If the node has a gradient fill, it returns the average color.
- */
-export default ( node: CustomAllowedNodeTypes ) => {
-  const nodeFill: Paint = cloneObj(node.fills).pop()
-  const returnFill = getFill(node, nodeFill)
-
-  return {
-    r: Math.round(returnFill.r * 255), 
-    g: Math.round(returnFill.g * 255), 
-    b: Math.round(returnFill.b * 255) 
   }
 }

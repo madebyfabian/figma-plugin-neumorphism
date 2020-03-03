@@ -2,11 +2,10 @@ declare global {
   type CustomOptionsObject = {
     intensity: number,
     elevation: number,
-    inset: boolean,
     shadowDirection: 'TOP_LEFT' | 'TOP_RIGHT' | 'BOTTOM_RIGHT' | 'BOTTOM_LEFT'
     blurManuallySet: boolean,
     blur: number,
-    fillType: 'FLAT' | 'CONCAVE' | 'CONVEX'
+    fillType: 'FLAT' | 'CONCAVE' | 'CONVEX' | 'INSET'
   }
   
   type CustomAllowedNodeTypes = Exclude<SceneNode, SliceNode | GroupNode>

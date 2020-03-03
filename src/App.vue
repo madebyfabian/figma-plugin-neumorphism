@@ -1,5 +1,5 @@
 <template>
-  <div v-if="currSelIsValid && !showInitialStartupBtn">
+  <!-- <div v-if="currSelIsValid && !showInitialStartupBtn">
     Elevation:<br>
     <div class="center">
       <input type="range"  min="1" max="100" v-model.number="values.elevation">
@@ -48,20 +48,19 @@
         <br>
         <input type="radio" id="CONCAVE" value="CONCAVE" v-model="values.fillType">
         <label for="CONCAVE">Concave</label>&nbsp;&nbsp;
-        <br>
+      </div>
+      <div class="center">
         <input type="radio" id="CONVEX" value="CONVEX" v-model="values.fillType">
         <label for="CONVEX">Convex</label>
+        <br>
+        <input type="radio" id="INSET" value="INSET" v-model="values.fillType">
+        <label for="INSET">Inset</label>
       </div>
     </fieldset>
     <br><br>
 
-    <div class="center">
-      <input type="checkbox" id="INSET" v-model="values.inset">
-      <label for="INSET">Inset</label>
-    </div>
-    <br><br>
-
-    <button @click="resetValues">Reset everything</button>
+    <button @click="resetValues">Reset to defaults</button>
+    <button @click="removeEffect">Remove effect</button>
   </div>
 
 
@@ -71,7 +70,38 @@
 
   <div v-else class="center-container center">
     <button @click="resetValues">Neumorph' it!</button>
+  </div> -->
+
+  
+  <div :class="a11yClass" @mouseenter="() => a11yClassChange(false)">
+    <Slider />
   </div>
+
+  <!-- <div class="grid">
+    <div class="item">
+      <h1 class="item__headline">Elevation</h1>
+      <div class="item__img">
+        <img src="./assets/preview-image__elevation.svg" alt="Elevation">
+      </div>
+      
+    </div>
+
+    <div class="item">
+      Test
+    </div>
+
+    <div class="item">
+      Test
+    </div>
+
+    <div class="item">
+      Test
+    </div>
+
+    <div class="item item--bottom-bar">
+      Test
+    </div>
+  </div> -->
 </template>
 
 <script>
@@ -83,18 +113,24 @@
   }
 
   const generateValues = () => {
-    return { intensity: 10, elevation: 5, inset: false, shadowDirection: 'TOP_LEFT', manualBlur: false, fillType: 'FLAT' }
+    return { intensity: 10, elevation: 5, shadowDirection: 'TOP_LEFT', manualBlur: false, fillType: 'FLAT' }
   }
+
+  import Slider from './components/Slider'
 
   export default {
     name: "App",
+
+    components: {Slider},
 
     data() {
       return {
         'values': generateValues(),
         'doneInit': false,
         'currSelIsValid': false,
-        'showInitialStartupBtn': false
+        'showInitialStartupBtn': false,
+
+        'a11yClass': 'using-keyboard'
       }
     },
 
@@ -106,7 +142,6 @@
 
       'values.intensity'()        { this.syncShadowOptions() },
       'values.elevation'()        { this.syncShadowOptions() },
-      'values.inset'()            { this.syncShadowOptions() },
       'values.shadowDirection'()  { this.syncShadowOptions() },
       'values.fillType'()         { this.syncFillType() }
     },
@@ -121,7 +156,7 @@
         }
       },
 
-      'options': function() {
+      'options'() {
         const { manualBlur, ...otherValues } = this.values
 
         return {
@@ -129,7 +164,7 @@
           blur: this.blur,
           blurManuallySet: !!manualBlur
         }
-      }
+      },
     },
 
     methods: {
@@ -154,6 +189,17 @@
         this.syncShadowOptions(true)
 
         this.$nextTick(() => this.doneInit = true)
+      },
+
+      removeEffect() {
+        this.doneInit = false
+        this.showInitialStartupBtn = true
+
+        postMsg('removeEffect', { options: {} })
+      },
+
+      a11yClassChange(usingKeyboard) {
+        this.a11yClass = usingKeyboard ? 'using-keyboard' : 'using-mouse'
       }
     },
 
@@ -188,71 +234,67 @@
         }
 
       }
+    },
+
+    mounted() {
+      window.addEventListener('keydown', function(e) {
+        this.a11yClassChange(true)
+      }.bind(this));
     }
   };
 </script>
 
-<style>
-#app {
-  font-family: "Avenir", Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-body {
-  font: 12px sans-serif;
-  text-align: center;
-  margin: 20px;
-  user-select: none;
-}
-button {
-  border-radius: 5px;
-  background: white;
-  color: black;
-  border: none;
-  padding: 8px 15px;
-  margin: 0 5px;
-  box-shadow: inset 0 0 0 1px black;
-  outline: none;
-}
-#create {
-  box-shadow: none;
-  background: #18a0fb;
-  color: white;
-}
-input {
-  border: none;
-  outline: none;
-  padding: 8px;
-}
-input:hover {
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
-}
-button:focus {
-  box-shadow: inset 0 0 0 2px #18a0fb;
-}
-#create:focus {
-  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.3);
-}
-/* input:focus {
-  box-shadow: inset 0 0 0 2px #18a0fb;
-} */
+<style lang="scss">
+  * {
+    box-sizing: border-box;
+  }
+  
+  #app {
+    font-family: "Inter", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-align: center;
+    color: #333;
+    margin-top: 60px;
+  }
 
+  body {
+    font: 12px sans-serif;
+    margin: 1.25rem 1rem 0;
+    user-select: none;
+  }
 
-.center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+  .grid {
+    display: grid;
+    gap: 3.5rem 2rem;
+    grid-template: 1fr / 1fr 1fr;
 
-input[type="number"] {
-  width: 50px;
-  border: 1px solid #f7f7f8;
-}
+    .item {
+      &--bottom-bar {
+        grid-column: 1 / 3;
+        margin: 0 -1rem;
+        height: 40px;
+      }
 
-.center-container {
-  height: calc(100vh - 40px);
-}
+      &__headline {
+        font-weight: 600;
+        font-size: 14px;
+        line-height: 16px;
+        letter-spacing: -0.015em;
+        margin: 0 0 1rem;
+      }
+
+      &__img {
+        height: 7.5rem;
+        width: 10rem;
+        background: rgba(#000, .03);
+        border-radius: 1rem;
+
+        img {
+          width: 100%;
+          height: auto;
+        }
+      }
+    }
+  }
 </style>

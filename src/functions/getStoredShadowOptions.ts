@@ -1,16 +1,10 @@
 import cloneObj from '../helpers/cloneObj'
 import isEqualObj from '../helpers/isEqualObj'
+import { getPluginData } from '../helpers/figmaFnWrapper'
 import { 
   SHADOW_OPTIONS_PLUGIN_DATA_KEY, 
   SHADOW_EFFECT_OBJECTS_PLUGIN_DATA_KEY 
 } from '../store'
-
-
-
-const getPluginData = ( node: CustomAllowedNodeTypes, key: string ) => {
-  let data = node.getPluginData(key)
-  return (!data.length) ? null : JSON.parse(data)
-}
 
 
 /**

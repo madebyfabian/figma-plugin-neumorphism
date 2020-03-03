@@ -10,12 +10,10 @@ const generateShadowObj = (options: { type: ShadowEffect['type'], color: RGBA, o
 
 
 export default ( node: CustomAllowedNodeTypes, options: CustomOptionsObject ) => {
-  const nodeColor = getFillColor(node)
-
-  let shadowType: ShadowEffect['type'] = options.inset ? 'INNER_SHADOW' : 'DROP_SHADOW',
-      shadowTypeBorderFake: ShadowEffect['type'] = options.inset ? 'DROP_SHADOW' : 'INNER_SHADOW',
-      elevation = options.elevation
-
+  const elevation = options.elevation,
+        shadowType: ShadowEffect['type'] = options.fillType === 'INSET' ? 'INNER_SHADOW' : 'DROP_SHADOW',
+        shadowTypeBorderFake: ShadowEffect['type'] = shadowType === 'DROP_SHADOW' ? 'INNER_SHADOW' : 'DROP_SHADOW'
+      
   let offset: Vector
   switch (options.shadowDirection) {
     case 'TOP_LEFT':     offset = { x:  elevation, y:  elevation }; break
@@ -37,6 +35,7 @@ export default ( node: CustomAllowedNodeTypes, options: CustomOptionsObject ) =>
   // Calc border fake blur radius
   const radiusBorderFake = Math.max(Math.round(mathAvg(offsetBorderFake.x, offsetBorderFake.y) * 1.25), 2)
 
+  const nodeColor = getFillColor(node)
   const darkShadowColor: RGBA   = { ...calcColor(nodeColor, options.intensity * -1), a: .9 }
   const lightShadowColor: RGBA  = { ...calcColor(nodeColor, options.intensity), a: .9 }
 
