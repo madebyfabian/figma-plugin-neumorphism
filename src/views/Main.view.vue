@@ -48,12 +48,19 @@
     </div>
   </div>
 
-  <div v-else-if="!currSelIsValid" class="center-container center">
-    Please select something :)
+  <div v-else-if="!currSelIsValid" class="center-container">
+    <div>
+      <p>
+        Please select something 😊
+      </p>
+      <p>
+        <span>Everything exept multiple nodes<br> and groups is suported!</span>
+      </p>
+    </div>
   </div>
 
-  <div v-else class="center-container center">
-    <button @click="resetValues">Neumorph' it!</button>
+  <div v-else class="center-container">
+    <button @click="resetValues" class="start-btn">Neumorph' it!</button>
   </div>
 </template>
 
@@ -242,5 +249,28 @@
         }
       }
     }
+  }
+
+  .center-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(100% - 1.25rem);
+    margin-bottom: 1.25rem;
+    text-align: center;
+    line-height: 1.5;
+
+    span {
+      opacity: .5;
+    }
+  }
+
+  .start-btn {
+    height: 32px;
+    background: #18A0FB;
+    border-radius: 6px;
+    padding: 0 16px;
+    border: none;
+    color: #fff;
   }
 </style>
