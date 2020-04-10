@@ -1,40 +1,28 @@
 const path = require('path')
-const VueLoaderPlugin = require('vue-loader/lib/plugin')
-const HtmlWebpackPlugin = require('html-webpack-plugin')
-const HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin')
 
-const WebpackMessages = require('webpack-messages')
+// Plugins
+const VueLoaderPlugin = require('vue-loader/lib/plugin'),
+			HtmlWebpackPlugin = require('html-webpack-plugin'),
+			HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin'),
+			WebpackMessages = require('webpack-messages'),
+			CopyPlugin = require('copy-webpack-plugin') // added by me
+
 
 console.clear()
 
 module.exports = (env, argv) => ({
+	mode: (argv.mode === 'production') ? 'production' : 'development',
+
 	// This is necessary because Figma's 'eval' works differently than normal eval
 	devtool: argv.mode === 'production' ? false : 'inline-source-map',
+
+	stats: false,
 
 	entry: {
 		ui: './src/ui.ts',
 		main: './src/main.ts',
 	},
-
-	resolveLoader: {
-		modules: [path.join(__dirname, 'node_modules')]
-	},
-
-	// stats: {
-	// 	logging: 'info',
-		
-	// 	modules: false,
-
-	// 	// assets: false,
-	// 	builtAt: false,
-	// 	timings: false,
-	// 	version: false,
-	// 	entrypoints: false,
-	// 	hash: false
-	// },
-
-	stats: false,
-
+	
 	module: {
 		rules: [
 			// Converts Vue code to JavaScript
@@ -51,6 +39,10 @@ module.exports = (env, argv) => ({
 
 			{ test: /\.scss$/, use: [ 'vue-style-loader', 'css-loader', 'sass-loader' ] }
 		],
+	},
+
+	resolveLoader: {
+		modules: [path.join(__dirname, 'node_modules')]
 	},
 
 	resolve: {
@@ -75,7 +67,23 @@ module.exports = (env, argv) => ({
 		}),
 		new HtmlWebpackInlineSourcePlugin(),
 		new VueLoaderPlugin(),
-		new WebpackMessages()
+		new WebpackMessages(),
+
+		// added by me
+    new CopyPlugin([
+      { 
+				from: './src/manifest.json', 
+				to: './manifest.json',
+				transform: (content, path) => {
+					try {
+						const str = content.toString().replace('__STATE__', (argv.mode === 'production' ? '🚀 PROD' : '⚙️ DEV'))
+						return Buffer.from(str)
+					} catch (error) {
+						console.error(error)
+					}
+				}
+			},
+    ])
 	],
 
 	node: {

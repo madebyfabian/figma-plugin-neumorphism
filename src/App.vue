@@ -33,14 +33,7 @@
 </script>
 
 <style lang="scss">
-  @font-face {
-    font-family: 'Inter var';
-    font-weight: 100 900;
-    font-display: swap;
-    font-style: normal;
-    font-named-instance: 'Regular';
-    src: url('./assets/fonts/Inter-roman.var.woff2?v=3.11') format('woff2');
-  }
+  @import url('https://rsms.me/inter/inter.css');
 
   * {
     font-family: 'Inter var', system-ui, sans-serif!important;

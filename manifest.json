@@ -1,7 +1,0 @@
-{
-  "name": "Neumorphism",
-  "id": "810863251895788520",
-  "api": "1.0.0",
-  "main": "build/main.js",
-  "ui": "build/ui.html"
-}
