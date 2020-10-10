@@ -70,24 +70,26 @@ export default ( node: CustomAllowedNodeTypes, options: CustomOptionsObject ) =>
       color: <RGBA>{ ...darkShadowColor, a: .2 },
       offset: <Vector>{ x: offset.x * -1, y: offset.y },
       radius: options.blur
-    }),
+    })
+  ]
 
+  if (options?.hasSmoothEdges) {
     // Dark border-fake
-    generateShadowObj({
+    generatedShadows.push(generateShadowObj({
       type: shadowTypeBorderFake,
       color: <RGBA>{ ...darkShadowColor, a: .5 },
       offset: <Vector>{ x: offsetBorderFake.x * -1, y: offsetBorderFake.y * -1 },
       radius: radiusBorderFake
-    }),
+    }))
 
     // Light border-fake
-    generateShadowObj({
+    generatedShadows.push(generateShadowObj({
       type: shadowTypeBorderFake,
       color: <RGBA>{ ...lightShadowColor, a: .3 },
       offset: offsetBorderFake,
       radius: radiusBorderFake
-    })
-  ]
+    }))
+  }
 
   // All the already existing blur effects
   const existingBlurEffects = cloneObj(node.effects).filter((effect: Effect) => effect.type === 'BACKGROUND_BLUR' || effect.type === 'LAYER_BLUR')

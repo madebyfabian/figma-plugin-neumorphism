@@ -90,7 +90,7 @@ const onSelectionChange = () => {
 try {
   figma.showUI(__html__, {
     width: 384,
-    height: 500
+    height: 544
   })
 
   // On plugin start.

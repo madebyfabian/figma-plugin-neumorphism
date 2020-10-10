@@ -5,7 +5,8 @@ declare global {
     shadowDirection: 'TOP_LEFT' | 'TOP_RIGHT' | 'BOTTOM_RIGHT' | 'BOTTOM_LEFT'
     blurManuallySet: boolean,
     blur: number,
-    fillType: 'FLAT' | 'CONCAVE' | 'CONVEX' | 'INSET'
+    fillType: 'FLAT' | 'CONCAVE' | 'CONVEX' | 'INSET',
+    hasSmoothEdges: boolean
   }
   
   type CustomAllowedNodeTypes = Exclude<SceneNode, SliceNode | GroupNode>

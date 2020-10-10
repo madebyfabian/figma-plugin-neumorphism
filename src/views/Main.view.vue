@@ -36,6 +36,15 @@
       ]" />
     </div>
 
+    <div class="item item--smooth-edges" style="height: 36px;">
+      <div>
+        <h1 class="item__headline">Smooth Edges</h1>
+        <div class="item__text">Optically softens the edges of your element.</div>
+      </div>
+
+      <SwitchInput v-model="values.hasSmoothEdges" />
+    </div>
+
     <div class="item item--bottom-bar">
       <button @click="resetValues">
         <img src="../assets/icon-swap.svg" alt="Reset to defaults" class="item__icon">
@@ -67,18 +76,21 @@
 <script>
   const postMsg = (type, value) => parent.postMessage({ pluginMessage: { type, value }}, '*'),
         generateValues = () => {
-          return { intensity: 10, elevation: 5, shadowDirection: 'TOP_LEFT', manualBlur: false, fillType: 'FLAT' }
+          return { intensity: 10, elevation: 5, shadowDirection: 'TOP_LEFT', manualBlur: false, fillType: 'FLAT', hasSmoothEdges: true }
         }
 
   import Slider from '../components/Slider'
   import RadioFieldset from '../components/RadioFieldset'
+  import SwitchInput from '../components/SwitchInput'
+
 
   export default {
     name: "App",
 
     components: {
       Slider,
-      RadioFieldset
+      RadioFieldset,
+      SwitchInput
     },
 
     data() {
@@ -99,7 +111,8 @@
       'values.intensity'()        { this.syncShadowOptions() },
       'values.elevation'()        { this.syncShadowOptions() },
       'values.shadowDirection'()  { this.syncShadowOptions() },
-      'values.fillType'()         { this.syncFillType() }
+      'values.fillType'()         { this.syncFillType() },
+      'values.hasSmoothEdges'()   { this.syncShadowOptions() }
     },
 
     computed: {
@@ -172,9 +185,13 @@
               break
 
             const { blur, blurManuallySet, ...otherOptions } = msg.value.optionsStoredOnNode
+            console.log({ optionsStoredOnNode: msg.value.optionsStoredOnNode })
             this.values = { 
               ...otherOptions,
-              manualBlur: blurManuallySet ? blur : null
+              manualBlur: blurManuallySet ? blur : null,
+
+              // Because I added this feature after the launch and on some "old" neumorphed elements, there won't be this option saved in pluginData
+              hasSmoothEdges: otherOptions.hasSmoothEdges !== undefined ? otherOptions.hasSmoothEdges : true
             }
 
             this.$nextTick(() => this.doneInit = true)
@@ -191,12 +208,15 @@
 <style lang="scss" scoped>
   .grid {
     display: grid;
-    gap: 3.5rem 2rem;
+    gap: 2.5rem 2rem;
     grid-template: 1fr / 1fr 1fr;
 
     .item {
-      &--bottom-bar {
+      &--bottom-bar, &--smooth-edges {
         grid-column: 1 / 3;
+      }
+
+      &--bottom-bar {
         margin: 0 -1rem;
         height: 40px;
         border-top: 1px solid rgba(0, 0, 0, 0.1);
@@ -227,12 +247,28 @@
         }
       }
 
+      &--smooth-edges {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        .item__headline {
+          margin-bottom: .25rem!important;
+        }
+      }
+
       &__headline {
         font-weight: 600;
         font-size: 14px;
         line-height: 16px;
         letter-spacing: -0.015em;
         margin: 0 0 1rem;
+      }
+
+      &__text {
+        font-size: 12px;
+        font-weight: 400;
+        color: #666;
       }
 
       &__img {
