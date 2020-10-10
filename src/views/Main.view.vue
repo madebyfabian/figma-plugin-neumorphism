@@ -185,7 +185,7 @@
               break
 
             const { blur, blurManuallySet, ...otherOptions } = msg.value.optionsStoredOnNode
-            console.log({ optionsStoredOnNode: msg.value.optionsStoredOnNode })
+            // console.log({ optionsStoredOnNode: msg.value.optionsStoredOnNode })
             this.values = { 
               ...otherOptions,
               manualBlur: blurManuallySet ? blur : null,
