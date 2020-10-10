@@ -46,7 +46,8 @@ const onSelectionChange = () => {
     setPluginData(currNode, SHADOW_OPTIONS_PLUGIN_DATA_KEY, options)
 
     // Add relaunchData
-    currNode.setRelaunchData({ edit: 'Opens the Plugin "Neumorphism", allowing you to change the neumorphic appearance.' })
+    if (currNode.type !== 'INSTANCE') // Because the relaunchData of instances can't be overridden
+      currNode.setRelaunchData({ edit: 'Opens the Plugin "Neumorphism", allowing you to change the neumorphic appearance.' })
 
     switch (msgType) {
       case 'syncShadowOptions':
